@@ -41,12 +41,14 @@ dis dma_buffer_send 	/* 汇编 */
 dis -l dma_buffer_send+120 10    /* 汇编 偏移120 解析10行 */
 struct ecarxlink_scatter_data -o /* 解析 结构体 偏移 */
 rd ffff800012145138 32  /* 读取 32B */
+rd ffff800012145138 -e ffff800012145148  /* dump的start和end */
 p jeffies 		/* 打印变量 */
+p mutex_lock 		/* 打印函数地址 */
 pd jeffies 		/* 十进制打印 */
 px jeffies 		/* 十六进制打印 */
-struct task_struct ffff000e7a6fcc00 -x  /* 解析 task_struct */
+struct task_struct ffff000e7a6fcc00 -x xxxxxx /* 解析 task_struct */
 struct mm_struct init_mm  /* 查看 全局变量 init_mm System.map中可以找到 */
-
+struct mm_struct.owner,mm_user ffff000e7a6fcc00  /* 解析owner和mm_user 两个成员 */
 
 
 
@@ -85,3 +87,15 @@ cur->__state 进程状态
 cur->exit_state 进程退出的状态
 cur->exit_code  进程正常终止的状态码
 cur->exit_signal 进程异常终止的信号
+
+
+//TODO - crash whatis
+
+whatis -o mm_struct
+
+//TODO - crash list
+
+list rwsem_waiter.list -s rwsem_waiter.task,type -h 0xffff800061c57aa0
+rwsem_waiter.list 结构体和list成员
+-s 输出的成员信息
+-h 内嵌 list_head地址

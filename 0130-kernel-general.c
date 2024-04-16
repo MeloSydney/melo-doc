@@ -365,7 +365,12 @@ void set_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep, pte_t pte
 
 struct page *page;
 page = alloc_pages(gfp_mask & ~__GFP_HIGHMEM, order);
-page_address(page)  /* kernel 线性映射 va */
+page_address(page)
+	if (!PageHighMem(page))
+		return lowmem_page_address(page);
+			return page_to_virt(page);
+					pfn_to_virt(page_to_pfn(page))
+						return __va(pfn) << PAGE_SHIFT;
 
 
 //TODO - kernel WRITE_ONCE READ_ONCE

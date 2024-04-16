@@ -13,22 +13,22 @@
 ![](images/20240301171946.png)
 
 
-//TODO - kernel mm free_area free_list
+//TODO - kernel mm free_area free_list MIGRATE_TYPES
 
 ![](images/20240312134739.png)
 
 
-//TODO - kernel mm_rb mm_struct vm_area_struct
+//TODO - kernel mm_struct mm_rb vma 各种段
 
 ![](images/20240305110437.png)
 
 
-//TODO - kernel fdtable
+//TODO - kernel 进程 fdtable
 
 ![](images/20240305112625.png)
 
 
-//TODO - kernel handle pte fault
+//TODO - kernel handle pte fault PTE异常处理
 
 ![](images/20240306170046.png)
 
@@ -41,7 +41,7 @@
 
 ![](images/20240307144013.png)
 
-//TODO - kernel kmalloc slowpath fastpath
+//TODO - kernel kmalloc 慢速路径 快速路径
 
 ![](images/20240307151726.png)
 ![](images/20240307154330.png)
@@ -87,3 +87,7 @@
 //TODO - kernel 64bit PTE value
 
 ![](images/20240329112728.png)
+
+//TODO - kernel cache way set line index tag entry
+
+![](images/20240410150120.png)

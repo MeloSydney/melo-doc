@@ -146,3 +146,18 @@ Locked /* 防止swap out */
         struct mm_struct *active_mm;
 }
 
+struct mm_struct {
+        struct vm_area_struct *mmap;        /* list of VMAs */
+        struct rb_root mm_rb;               /* all vma */
+        pgd_t * pgd;
+        int map_count;                      /* count of vma */
+}
+
+struct vm_area_struct {
+        unsigned long vm_start;         /* addr */
+        unsigned long vm_end;           /* addr + len */
+        struct mm_struct *vm_mm;
+        pgprot_t vm_page_prot;
+        struct vm_area_struct *vm_next, *vm_prev;   /* vma 在 mm_struct->mmap 双向链表中的前驱节点和后继节点 */
+        struct rb_node vm_rb;                       /* vma 在 mm_struct->mm_rb 红黑树中的节点 */
+}
