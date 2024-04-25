@@ -39,7 +39,7 @@ events
 	format  /* 输出格式 */
 kprobe_events      /* krpobe 激活 */
 kprobe_profile     /* kprobe 输出 */
-max_graph_depth    /* 调用栈最大深度 */
+max_graph_depth    /* 调用栈最大深度 func_graph 专用 */
 set_event          /* 特定事件触发时 打开 ftrace */
 set_event_pid      /* 追踪 pid */
 set_ftrace_filter  /* 白名单 */		/* CONFIG_DYNAMIC_FTRACE 动态ftrace */
@@ -47,7 +47,7 @@ set_ftrace_notrace /* 黑名单 */		/* CONFIG_DYNAMIC_FTRACE 动态ftrace */
 set_graph_function /* func-trace 白名单 */	/* CONFIG_DYNAMIC_FTRACE 动态ftrace */
 trace_clock        /* https://zhuanlan.zhihu.com/p/611163404 */
 options
-	func_stack_trace  /* echo 1 > options/func_stack_trace 查看调用栈 */
+	func_stack_trace  /* echo 1 > options/func_stack_trace 查看调用栈 function tracer 专用 */
 trace_maker        /* 支持 us 打印日志 */
 	/* https://www.cnblogs.com/Linux-tech/p/14110332.html */
 
@@ -272,8 +272,23 @@ echo 1 > events/kprobes/p_bio_add_page_0/enable
 ...
 cat trace
 
+sudo echo 'p:my_grp/arm64_sys_openat __arm64_sys_openat dfd=$arg1 flags=$arg3 mode=$arg4' >> kprobe_events
+sudo echo 'r:my_grp/arm64_sys_openat __arm64_sys_openat ret=$retval' >> kprobe_events
+
 
 
 //TODO - ftrace objtrace
 
 echo 'objtrace:add:arg1,0x28:u32:5 if comm == "cat"' > ./events/kprobes/p_bio_add_page_0/trigger
+
+
+//TODO - ftrace uprobe
+
+
+readelf -s /bin/bash | grep -w readline
+	920: 00000000000d6070   208 FUNC    GLOBAL DEFAULT   13 readline  /* 查看 readline 符号的地址 */
+
+echo 'p:my_grp/readline /bin/bash:0xd6070' >> uprobe_events  /* 追踪 readline */
+echo 1 > events/my_grp/readline/enable
+echo 0 > events/my_grp/readline/enable
+echo '-:my_grp/readline' >> uprobe_events

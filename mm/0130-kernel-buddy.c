@@ -56,7 +56,7 @@ enum migratetype {
 };
 
 
-//TODO - kernel mm fallbacks rules
+//TODO - kernel mm buddy fallbacks rules
 
 static int fallbacks[MIGRATE_TYPES][3] = {
 	[MIGRATE_UNMOVABLE]   = { MIGRATE_RECLAIMABLE, MIGRATE_MOVABLE,   MIGRATE_TYPES },

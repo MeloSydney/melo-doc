@@ -28,7 +28,7 @@
 ![](images/20240305112625.png)
 
 
-//TODO - kernel handle pte fault PTE异常处理
+//TODO - kernel handle_pte_fault PTE异常处理
 
 ![](images/20240306170046.png)
 
@@ -91,3 +91,25 @@
 //TODO - kernel cache way set line index tag entry
 
 ![](images/20240410150120.png)
+
+//TODO - kernel vmalloc vm_struct vmap_area
+
+![](images/20240418110932.png)
+
+
+//TODO - kernel file inode pagecache
+
+![](images/20240423102641.png)
+
+
+//TODO - kernel mmap elf libso
+
+![](images/20240423102943.png)
+
+
+//TODO - kernel buddy get_page_from_
+
+![](images/20240423143454.png)
+
+
+

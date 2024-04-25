@@ -247,7 +247,8 @@ https://linuxtv.org/downloads/v4l-dvb-internals/device-drivers/ch02s03.html   //
 
 https://www.cnblogs.com/yaongtime/p/14594567.html   // fence demo
 
-https://blog.csdn.net/tugouxp/article/details/131197570  // fence demo
+https://blog.csdn.net/tugouxp/article/details/131197570  // fence de
+mo
 
 https://xuezitian.github.io/2022/05/28/linux-kernel-dma-buf-analysis.html  // fence dma_resv 区别
 

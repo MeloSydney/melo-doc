@@ -113,11 +113,59 @@ static struct tracer function_trace __tracer_data =
 #endif
 };
 
+static struct trace_buffer *temp_buffer;
+
+struct tracer nop_trace __read_mostly =
+{
+	.name		= "nop",
+	.init		= nop_trace_init,
+	.reset		= nop_trace_reset,
+#ifdef CONFIG_FTRACE_SELFTEST
+	.selftest	= trace_selftest_startup_nop,
+#endif
+	.flags		= &nop_flags,
+	.set_flag	= nop_set_flag,
+	.allow_instances = true,
+};
+
+static struct tracer function_trace __tracer_data =
+{
+	.name		= "function",
+	.init		= function_trace_init,
+	.reset		= function_trace_reset,
+	.start		= function_trace_start,
+	.flags		= &func_flags,
+	.set_flag	= func_set_flag,
+	.allow_instances = true,
+#ifdef CONFIG_FTRACE_SELFTEST
+	.selftest	= trace_selftest_startup_function,
+#endif
+};
+
 start_kernel(void)
 	ftrace_init();
+		unsigned long count, flags;
+		extern unsigned long __start_mcount_loc[];
+		extern unsigned long __stop_mcount_loc[];
+		count = __stop_mcount_loc - __start_mcount_loc;
+		ret = ftrace_process_locs(NULL, __start_mcount_loc, __stop_mcount_loc);
+			struct ftrace_page *start_pg;
+			start_pg = ftrace_allocate_pages(count);
+			ftrace_update_code(mod, start_pg);  /* mod = NULL */
 	early_trace_init();
 		tracer_alloc_buffers();
+			temp_buffer = ring_buffer_alloc(PAGE_SIZE, RB_FL_OVERWRITE);
 			register_tracer(&nop_trace);
+				add_tracer_options(&global_trace, type);
+					create_trace_option_files(tr, t);  /* (struct trace_array *tr, struct tracer *tracer) */
+						struct trace_option_dentry *topts;
+						struct trace_options *tr_topts;
+						topts = kcalloc(cnt + 1, sizeof(*topts), GFP_KERNEL);
+						tr_topts = krealloc(tr->topts, sizeof(*tr->topts) * (tr->nr_topts + 1), GFP_KERNEL);
+						tr->topts = tr_topts;
+						tr->topts[tr->nr_topts].tracer = tracer;
+						tr->topts[tr->nr_topts].topts = topts;
+						tr->nr_topts++;
 			init_function_trace();
 				return register_tracer(&function_trace);
 			if (allocate_objtrace_data(&global_trace))
@@ -330,11 +378,8 @@ static struct ftrace_ops trace_ops = {
 };
 
 static void
-trace_object_trigger(struct event_trigger_data *data,
-		   struct trace_buffer *buffer,  void *rec,
-		   struct ring_buffer_event *event)
+trace_object_trigger(struct event_trigger_data *data, struct trace_buffer *buffer,  void *rec, struct ring_buffer_event *event)
 {
-
 	struct ftrace_event_field *field = data->private_data;
 	void *obj = NULL;
 
@@ -343,8 +388,7 @@ trace_object_trigger(struct event_trigger_data *data,
 }
 
 static void
-trace_object_trigger_free(struct event_trigger_ops *ops,
-		   struct event_trigger_data *data)
+trace_object_trigger_free(struct event_trigger_ops *ops, struct event_trigger_data *data)
 {
 	if (WARN_ON_ONCE(data->ref <= 0))
 		return;
@@ -355,9 +399,7 @@ trace_object_trigger_free(struct event_trigger_ops *ops,
 }
 
 static void
-trace_object_count_trigger(struct event_trigger_data *data,
-			 struct trace_buffer *buffer, void *rec,
-			 struct ring_buffer_event *event)
+trace_object_count_trigger(struct event_trigger_data *data, struct trace_buffer *buffer, void *rec, struct ring_buffer_event *event)
 {
 	if (!data->count)
 		return;
@@ -368,16 +410,14 @@ trace_object_count_trigger(struct event_trigger_data *data,
 	trace_object_trigger(data, buffer, rec, event);
 }
 
-static int event_object_trigger_init(struct event_trigger_ops *ops,
-		       struct event_trigger_data *data)
+static int event_object_trigger_init(struct event_trigger_ops *ops, struct event_trigger_data *data)
 {
 	data->ref++;
 	return 0;
 }
 
 static int
-event_trigger_print(const char *name, struct seq_file *m,
-		    void *data, char *filter_str)
+event_trigger_print(const char *name, struct seq_file *m, void *data, char *filter_str)
 {
 	long count = (long)data;
 
