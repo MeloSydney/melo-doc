@@ -70,13 +70,10 @@ ranges = <0 0x802000 0x1000>;            /* 0 base len */
 ranges = <local地址, parent地址, size>  // 表示将local地址向parent地址的转换
 reg = <0x00001 0x01 0x000010 0x02>; // 起始地址为0x0001 大小为0x01 起始地址为0x000010 大小为0x02
 
-
-## interrupts
-interrupts = ;
-第一个cell用于指示中断的类型,0是SPI,1是PPI；
-第二个cell用于指示中断号；
-第三个cell用于指示中断的flag,包括: bits[3:0]指示中断的触发类型,1 edge triggered,4 level triggered
-
+interrupts = <0 2 4>;
+0 中断来源
+2 中断线号
+4 触发类型
 
 
 //TODO - kernel dts 获取 ranges
@@ -468,6 +465,9 @@ adb shell settings put system pointer_location 1
 pause
 
 
+//TODO - bash 2>&1
+
+command > output.txt 2>&1		// stderr和stdout全部输出到output.txt
 
 //TODO - bash start camera.sh
 

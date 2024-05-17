@@ -118,13 +118,13 @@ tmux ls
 void *orig_stack_pointer;
 void blow_stack()
 {
-	blow_stack();
+    blow_stack();
 }
 
 int main() {
-	__asm__("movl %esp,  orig_stack_pointer");
-	blow_stack();
-	return 0;
+    __asm__("movl %esp,  orig_stack_pointer");
+    blow_stack();
+    return 0;
 }
 
 $ g++ -g stacksize.c -o ./stacksize
@@ -148,11 +148,11 @@ $3 = 8378368    // Current Process Stack Size is 8M
 #define SIZE 100
 void show_bt(void)
 {
-	int nptrs;
-	void *buffer[100];
-	nptrs = backtrace(buffer,  SIZE);
-	printf("backtrace() returned %d addresses\n",  nptrs);
-	backtrace_symbols_fd(buffer,  nptrs,  STDOUT_FILENO);
+    int nptrs;
+    void *buffer[100];
+    nptrs = backtrace(buffer,  SIZE);
+    printf("backtrace() returned %d addresses\n",  nptrs);
+    backtrace_symbols_fd(buffer,  nptrs,  STDOUT_FILENO);
 }
 
 
@@ -173,6 +173,10 @@ tar  xvf   libvirt-3.2.0.tar
 sudo setpci -s 00:02.1 F4.B=x
     For the PCI device with the ID 00:02.1,  set the register F4 (byte only) to x.
 
+
+//TODO - linux minicom
+
+minicom -b 115200 -D /dev/tty*  /* 波特率 设备 */
 
 //TODO - linux sed
 
@@ -216,10 +220,10 @@ rsync -arv ./DRMTest/ \
 ffjerry@10.43.48.12:/home/ffjerry/work/melo/01.ubuntu.game/0624-gamescreen/game_screen/DRMTest
 source: ./DRMTest/
 destnation: /home/ffjerry/work/melo/01.ubuntu.game/0624-gamescreen/game_screen/DRMTest
-	a  所有文件
-	r  递归
-	v  verbose
-	avzP  强总
+    a  所有文件
+    r  递归
+    v  verbose
+    avzP  强总
 
 rsync -a --delete ./empty/ ./wanna-delete/  /* 删除空文件夹 */
 rsync -a --delete ./blank/ ./src-E045/      /* 删除大文件 */
@@ -228,14 +232,14 @@ rsync -a --delete ./blank/ ./src-E045/      /* 删除大文件 */
 //TODO - linux epoll
 
 int epoll_ctl（int epfd, int op, int fd, struct epoll_event * event）
-	op EPOLL_CTL_ADD   新加fd   EPOLL_CTL_MOD  更改fd属性   EPOLL_CTL_DEL  删除fd
-	ev.data.fd   通过socket返回的sockfd
-	ev.events   EPOLLIN  sockfd可读   EPOLLOUT  sockfd可写   EPOLLET  边缘触发
+    op EPOLL_CTL_ADD   新加fd   EPOLL_CTL_MOD  更改fd属性   EPOLL_CTL_DEL  删除fd
+    ev.data.fd   通过socket返回的sockfd
+    ev.events   EPOLLIN  sockfd可读   EPOLLOUT  sockfd可写   EPOLLET  边缘触发
 
 
 int epoll_wait（int epfd, struct epoll_event * events,  int maxevents, int timeout）
-	epfd  被监控的fd
-	timeout  超过timeout返回  如果-1 一直阻塞
+    epfd  被监控的fd
+    timeout  超过timeout返回  如果-1 一直阻塞
 
 
 //TODO - linux fstab mount
@@ -264,42 +268,42 @@ arp -a
 
 grep -r power /sys/ 2>/dev/null   过滤错误信息 permission denied
 grep -r power /sys/ >/dev/null 2>&1   字符串 >/dev/null 代表 将标准输出重定向到 /dev/null 中 ,
-	然后第二部分, 2>&1, 代表将标准错误重定向到标准输出文件中
-	这里你必须将标准输出文件写成 &1, 而不是简单地写成 1
-	写成 2>1 这样只会将标准输出重定向到一个名为 1 的文件中
+    然后第二部分, 2>&1, 代表将标准错误重定向到标准输出文件中
+    这里你必须将标准输出文件写成 &1, 而不是简单地写成 1
+    写成 2>1 这样只会将标准输出重定向到一个名为 1 的文件中
 
 
 //TODO - linux grep
 
 grep -nr $1 \
-	--include "*.h" --include "*.c" --include "*.S" --include "*.s" --include "*.py" \
-	--include "*.in" --include "*.sh" --include "*.rs" --include "*.mak" --include "Makefile" \
-	--include "*.whl" --include "*.xml" --include "*.js" \
-	$2
+    --include "*.h" --include "*.c" --include "*.S" --include "*.s" --include "*.py" \
+    --include "*.in" --include "*.sh" --include "*.rs" --include "*.mak" --include "Makefile" \
+    --include "*.whl" --include "*.xml" --include "*.js" \
+    $2
 
 
 //TODO - linux select API
 
 int select(int maxfdp1,
-		fd_set *readset,
-		fd_set *writeset,
-		fd_set *exceptset,
-		struct timeval *timeout);
+        fd_set *readset,
+        fd_set *writeset,
+        fd_set *exceptset,
+        struct timeval *timeout);
 
 timeout == NULL  等待无限长的时间
 
 timeout->tv_sec == 0 &&timeout->tv_usec == 0 不等待，直接返回
 
 timeout->tv_sec !=0 ||timeout->tv_usec!= 0 等待指定的时间
-	当有描述符符合条件或者超过超时时间的话，函数返回
-	在超时时间即将用完但又没有描述符合条件的话，返回 0
+    当有描述符符合条件或者超过超时时间的话，函数返回
+    在超时时间即将用完但又没有描述符合条件的话，返回 0
 
 readset, writeset, exceptset,指向描述符集
-	这些参数指明了我们关心哪些描述符，和需要满足什么条件(可写，可读，异常)
-	int FD_ZERO(int fd, fd_set *fdset);
-	int FD_CLR(int fd, fd_set *fdset);
-	int FD_SET(int fd, fd_set *fd_set);
-	int FD_ISSET(int fd, fd_set *fdset);
+    这些参数指明了我们关心哪些描述符，和需要满足什么条件(可写，可读，异常)
+    int FD_ZERO(int fd, fd_set *fdset);
+    int FD_CLR(int fd, fd_set *fdset);
+    int FD_SET(int fd, fd_set *fd_set);
+    int FD_ISSET(int fd, fd_set *fdset);
 
 
 
@@ -318,14 +322,14 @@ closesocket() 关闭socket
 
 ``` demo
 struct sockaddr_vm addr;
-	doamin
-		AF_VSOCK   vsock 实现vm和host之间的通信
-	type -- 指明socket类型，有3种：
-		SOCK_STREAM -- TCP类型，保证数据顺序及可靠性
-		SOCK_DGRAM --  UDP类型，不保证数据接收的顺序，非可靠连接；
-		SOCK_RAW -- 原始类型，允许对底层协议如IP或ICMP进行直接访问，不太常用。
+    doamin
+        AF_VSOCK   vsock 实现vm和host之间的通信
+    type -- 指明socket类型，有3种：
+        SOCK_STREAM -- TCP类型，保证数据顺序及可靠性
+        SOCK_DGRAM --  UDP类型，不保证数据接收的顺序，非可靠连接；
+        SOCK_RAW -- 原始类型，允许对底层协议如IP或ICMP进行直接访问，不太常用。
 
-	protocol -- 通常赋值"0"，由系统自动选择。
+    protocol -- 通常赋值"0"，由系统自动选择。
 
 int socket (int domain, int type, int protocol)
 addr.svm_family = AF_VSOCK;
@@ -334,10 +338,10 @@ addr.svm_cid = VMADDR_CID_HOST;
 if (connect(sockfd, (const struct sockaddr *)&addr, sizeof(struct sockaddr_vm)) < 0)
 // 发送数据 //
 if (send(sockfd, &msgdata, sizeof(msgdata), MSG_DONTWAIT) < 0)
-	1. s 指定发送端套接字描述符。
-	2. buff 表示存放发送数据的缓冲区。
-	3. 实际要发送的字节数，
-	4.第四个参数一般置零
+    1. s 指定发送端套接字描述符。
+    2. buff 表示存放发送数据的缓冲区。
+    3. 实际要发送的字节数，
+    4.第四个参数一般置零
 ```
 
 
@@ -355,14 +359,14 @@ ln –s  /var/www/test  ./test   /* 虚拟文件 ./test 真实文件 /var/www/te
 //TODO - linux scp
 
 scp -rp C:\Users\fan.shi\.ssh\id_rsa.pub shifan@10.43.201.145:/home/shifan
-	从windows将文件cp到linux
-	注意: scp -r 会将软连接的地址视为真正目录拷贝!!
+    从windows将文件cp到linux
+    注意: scp -r 会将软连接的地址视为真正目录拷贝!!
 
 scp -P 2222 amdgpu.ko shifan@localhost:~
-	通过ssh传输
+    通过ssh传输
 
 scp -P 2222 root@127.0.0.1:/1.info .
-	VM打开端口转发
+    VM打开端口转发
 
 
 //TODO - linux 动态库 so
@@ -385,7 +389,7 @@ readelf -Ws --dyn-syms amdgpu_drv.so /* 查看符号表 */
 //TODO - linux drm /dev/cardX 查看连接的card
 
 for p in /sys/class/drm/*/status;
-	do con=${p%/status}; echo -n "${con#*/card?-}: ; cat $p; done
+    do con=${p%/status}; echo -n "${con#*/card?-}: ; cat $p; done
 
 %/status   去除 /status
 con#*/card?-   只保留card0- 之后的字符串(card?-匹配)
