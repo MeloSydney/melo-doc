@@ -42,6 +42,7 @@ BUILDDIR        //
 BB_NUMBER_THREADS       // 多个bb任务
 PARALLEL_MAKE           // 多个线程执行一个bb任务
 
+{B}             // build directory
 {D}             // 组件最终安装路径
 {S}             // 解压源码路径
 {bindir}        // /usr/bin
@@ -137,19 +138,21 @@ bitbake -g core-image-c3b && cat pn-buildlist | grep package    // 解析bb依�
 bitbake -k PN           // 调试编译使用
 bitbake -v              // verbose
 bitbake -s              // 显示recipes版本
-bitbake -p              // 只解析 显示bb全部执行代码
-bitbake -e              // 打印环境变量
+bitbake -p              // 只解析 然后退出
+bitbake -e              // 显示bb全部执行代码   bitbake virtual/kernel -e > file  可以看到所有virtual/kernel相关的环境变量
 bitbake -e linux-imx | grep ^SRC_URI=           // 下载地址
 bitbake -f              // force
+bitbake linux-kernel --runonly fetch            // 只下载
+meta-poky/conf/distro/poky.conf                 // poky 版本号
 
-
+rm -rf bitbake.lock                             //
 //TODO - yocto devtool
 
 devtool add –srcbranch {branch} –srcrev {tag/commit-hash} {target} FETCH_URL    // 通过网络构建目标配方
 
 devtool modify linux-kernel                     // 拉取目标源码 到workspace进行修改
 
-devtool edit-recipe linux-kernel                // 修改目标配方
+devtool edit-recipe linux-kernel                // 修改 bb配方
 bitbake -c listtasks linux-kernel               // 查看 tasks
 bitbake -c melodebug linux-kernel               // 执行定义的 task {melodebug}
 devtool build linux-kernel                      // 重新构建该bb 失败
@@ -165,3 +168,21 @@ do_compile() {
     # 运行shell脚本并传递参数
     ${WORKDIR}/script.sh arg1 arg2
 }
+
+//TODO - yocto xxxtask
+
+addtask
+
+deltask
+
+do_compile[prefuncs] += "do_use_origin_initramfs"       // prefuncs 在执行 do_compile 之前执行 do_use_origin_initramfs 这个任务
+do_compile_prepend                                      // prepend 在 do_compile 任务最开始 直接嵌入新任务
+
+//TODO - yocto suffix
+
+_append         // 在前面添加
+_remove         // 删除
+_prepend        // 在后面添加
+
+
+PREFERRED_PROVIDER_virtual/kernel = "linux-yocto-xxx"   // virtual/kernel 是 yocto kernel 的虚拟提供者 优先寻找 linux-yocto-xxx.bb 生成的内核镜像

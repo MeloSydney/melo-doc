@@ -486,6 +486,10 @@ do
 done
 
 
+//TODO - bash timestamp
+
+echo "$(date '+%Y-%m-%d %H:%M:%S') - Melo"
+
 //TODO - kernel idr
 
 https://cloud.tencent.com/developer/article/1432802

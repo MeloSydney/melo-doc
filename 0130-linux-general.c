@@ -112,6 +112,10 @@ tmux attach -t acrn-bld
 tmux ls
 
 
+//TODO - linux vim shortcuts
+
+:s/XXX/xxx/g        /* 全局替换 XXX >> xxx */
+
 //TODO - linux 获取 栈帧 大小
 
 /* file name: stacksize.c */
@@ -259,6 +263,7 @@ arp -a
 
  awk '{print $1}' filename
 
+echo "1:2:3" | awk -F':' '{print $3}'           // -F 分隔符 $1 1 $2 2 $3 3
 
 //TODO - linux 重定向
 
@@ -345,6 +350,18 @@ if (send(sockfd, &msgdata, sizeof(msgdata), MSG_DONTWAIT) < 0)
 ```
 
 
+//TODO - linux simg2img
+
+simg2img boot.img boot-ext.img          // 将 boot 转化为 可以挂载的 boot-ext
+simg2img system.img system-ext.img
+sudo mount boot-ext.img b               // mount
+sudo mount system-ext.img s
+sudo cp $KERNEL_IMG ./b/system/boot/Image_linux         // 更新
+sudo cp $KO_MODULES ./s/system/lib/modules/5.10.59/ -rf
+sudo umount b                           // umount
+sudo umount s
+img2simg boot-ext.img boot.mod.img      // 封装 boot
+img2simg system-ext.img system.mod.img
 
 //TODO - linux watch
 
@@ -385,6 +402,11 @@ ldd  amdgpu_drv.so                   /* 查看链接上去的其他so */
 nm -D amdgpu_drv.so                  /* 查看内部符号表 */
 readelf -Ws --dyn-syms amdgpu_drv.so /* 查看符号表 */
 
+
+//TODO - linux sftp
+
+sftp -P 60608 root@30.178.39.26:/userdata
+put /home/melo.sf/rpm-AUTO_pbase_C3B_RTOS_TMP/image_files/J5/rtos.img           // userdata
 
 //TODO - linux drm /dev/cardX 查看连接的card
 
@@ -502,7 +524,7 @@ objdump -T /bin/zsh | grep -w zfree   /* 查看zfree符号 */
 aarch64-linux-gnu-objdump –s –x –d vmlinux > vmlinux.txt   /* arm64 -s 速度快 */
 
 
-//TODO - linux repo 
+//TODO - linux repo
 
 ./repo forall -c "git clean -df && git checkout -f && git reset --hard"; ./repo sync -j 48
 ./repo forall -c 'commitID=`git log --before "2023-05-08 22:00" -1 --pretty=format:"%H"`; git reset --hard $commitID'

@@ -40,21 +40,21 @@ i=0
 
 while [ $i -ne 10 ]
 do
-	./cli_x86 /c0 show all
-	./cli_x86 /c0 add vd r1 drives=0:1-2
-	./cli_x86 /c0 add vd r0 drives=0:3-4
-	./cli_x86 /c0 /vall del
-	lsscsi
+  ./cli_x86 /c0 show all
+  ./cli_x86 /c0 add vd r1 drives=0:1-2
+  ./cli_x86 /c0 add vd r0 drives=0:3-4
+  ./cli_x86 /c0 /vall del
+  lsscsi
 
-	sg_inq /dev/sdf
+  sg_inq /dev/sdf
 # fio -time_based=1 -rw=randrw -ioengine=libaio -bssplit=4k
 -numjobs=32 -iodepth=1 -runtime=20 -rwmixread=50 -percentage_random=100
 -do_verify=1 -verify=md5 -name=1 -filename=/dev/sdf
-	sg_inq /dev/sdc
+  sg_inq /dev/sdc
 # fio -time_based=1 -rw=randrw -ioengine=libaio -bssplit=4k
 -numjobs=32 -iodepth=1 -runtime=20 -rwmixread=50 -percentage_random=100
 -do_verify=1 -verify=md5 -name=1 -filename=/dev/sdc
-	let i++
+  let i++
 done
 ```
 
@@ -169,3 +169,10 @@ do
   done
 done
 ```
+
+
+//TODO - shell variables
+
+OPTIND
+
+OPTARG          //  ./script.sh -a value1 -b value2，那么 $OPTARG 会依次被赋值为 value1 和 value2。
