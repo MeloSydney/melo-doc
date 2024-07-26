@@ -24,7 +24,7 @@ git reset --hard $commitID  // 回退到某个提交
 
 /* 回退到某个时间点前 */
 
-./repo forall -c "git clean -df && git checkout -f && git reset --hard"; ./repo sync -j 48
+./repo forall -c "git clean -df && git checkout -f && git reset --hard HEAD~~"; ./repo sync -j 48
 ./repo forall -c 'commitID=`git log --before "2023-05-08 22:00" -1 --pretty=format:"%H"`; git reset --hard $commitID'
 
 

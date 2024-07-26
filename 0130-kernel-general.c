@@ -528,3 +528,8 @@ schedule()，进程调度，而schedule_timeout()进行调度之后，一定时�
 成功地唤醒一个被wait_event_interruptible()的进程，需要满足：
 1 condition为真的前提下
 2 调用wake_up()
+
+
+//TODO - kernel KSM Kernel Samepage Merging
+
+如果发现完全相同的内存页就会合并为单一内存页，并标志位写时复制COW(Copy On Write)

@@ -42,6 +42,11 @@ diff -uNr file1 file2
 master_xfer\s+=  匹配多个空格
 
 
+//TODO - cherry 键盘 锁定 win
+
+https://blog.csdn.net/weixin_43487782/article/details/108739900
+
+
 // TODO linux tmux config
 
 vi ~/.tmux.conf
@@ -233,6 +238,20 @@ rsync -a --delete ./empty/ ./wanna-delete/  /* 删除空文件夹 */
 rsync -a --delete ./blank/ ./src-E045/      /* 删除大文件 */
 
 
+//TODO - linux 更快删除
+
+rsync -a --delete-before --progress --stats ~/empty target_dir/
+
+find /path/to/directory -type f -delete
+find /path/to/directory -type d -exec rmdir {} +
+
+rm -rf --one-file-system /path/to/directory
+
+rm -rf /path/to/directory && mkdir /path/to/directory
+
+find /path/to/directory -type f | parallel -j 4 rm {}           /* 需要支持 parallel */
+find /path/to/directory -type d | parallel -j 4 rmdir {}
+
 //TODO - linux epoll
 
 int epoll_ctl（int epfd, int op, int fd, struct epoll_event * event）
@@ -400,7 +419,15 @@ scp -P 2222 root@127.0.0.1:/1.info .
 gcc -rdynamic -o main main.c -ldl    /* 编译main的bin  链接本地的 libcaculate.so */
 ldd  amdgpu_drv.so                   /* 查看链接上去的其他so */
 nm -D amdgpu_drv.so                  /* 查看内部符号表 */
-readelf -Ws --dyn-syms amdgpu_drv.so /* 查看符号表 */
+
+//TODO - linux od
+
+od -Ax -t x1 -N 52 main
+/*      Ax 地址显示 hex
+        Ad 地址显示 dec
+        -t x1 内容显示 hex 每次1字节
+        -N 读取 52字节
+*/
 
 
 //TODO - linux sftp
@@ -498,6 +525,31 @@ PARA2
 PARA3
 PARA4
 
+
+//TODO - armv8 register
+
+x30 lr    链接寄存器 ret 返回
+ELR_ELx   异常链接寄存器 eret 返回
+SP_ELn    异常sp寄存器
+ESR_ELn   同步或者SError异常 表明异常原因
+FAR_ELn   发生同步指令错误、数据错误和对齐错误的虚拟地址
+CPSR_ELx  当前runtime状态寄存器
+SPSR_ELx  备份 CPSR
+CurrentEL 当前EL等级
+
+msr SPSel, #0   // switch to SP_EL0
+msr SPSel, #1   // switch to SP_EL1
+
+EL0 call EL1
+call SVC
+
+EL1 call EL2/3
+HVC to EL2
+SMC to EL3
+
+EL2 call EL3
+SMC to EL3
+
 //TODO - kernel ifdef defined
 #ifdef
 只能判断单个条件
@@ -523,8 +575,3 @@ objdump -T Xorg|grep xf86   /* 查看xrog bin中 xf86开头的符号 */
 objdump -T /bin/zsh | grep -w zfree   /* 查看zfree符号 */
 aarch64-linux-gnu-objdump –s –x –d vmlinux > vmlinux.txt   /* arm64 -s 速度快 */
 
-
-//TODO - linux repo
-
-./repo forall -c "git clean -df && git checkout -f && git reset --hard"; ./repo sync -j 48
-./repo forall -c 'commitID=`git log --before "2023-05-08 22:00" -1 --pretty=format:"%H"`; git reset --hard $commitID'

@@ -9,13 +9,15 @@ READELF
 readelf -s {binary/so}
 
 
-/* 查看header */
-readelf -h hello
+readelf -h hello                        /* 查看 elf header */
 
-/* 查看每个段 */
-readelf -S hello
+readelf -S hello                        /* 查看每个段 */
 
+readelf -Ws --dyn-syms amdgpu_drv.so    /* 查看符号表 */
 
+readelf -x .shstrtab   vmlinux          /* 读取hex  section .shstrtab */
+
+readelf -l vmlinux                      /* 读取 program header table */
 //TODO - linux nm
 
 /* 查看hello内部符号 */

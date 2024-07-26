@@ -176,3 +176,11 @@ done
 OPTIND
 
 OPTARG          //  ./script.sh -a value1 -b value2，那么 $OPTARG 会依次被赋值为 value1 和 value2。
+
+
+//TODO - shell 获取参数
+
+$_              /* 最后一个参数 */
+!!:n            /* 第n个参数 */
+!$              /* 最后一个参数 */
+!^              /* 第一个参数 */

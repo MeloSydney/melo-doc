@@ -358,6 +358,108 @@ DECLARE_HOOK(android_vh_ptype_head,
         TP_PROTO(const struct packet_type *pt, struct list_head *vendor_pt),
         TP_ARGS(pt, vendor_pt));
 
+//TODO -
+
+
+
+// vmscan.h
+
+#undef TRACE_SYSTEM
+#define TRACE_SYSTEM vmscan
+
+#define TRACE_INCLUDE_PATH trace/hooks
+
+#if !defined(_TRACE_HOOK_VMSCAN_H) || defined(TRACE_HEADER_MULTI_READ)
+#define _TRACE_HOOK_VMSCAN_H
+
+#include <trace/hooks/slinux_hooks.h>
+
+DECLARE_HOOK(slinux_vh_set_scan_balance,
+             TP_PROTO(unsigned long scan_type, unsigned int *scan_balance),
+             TP_ARGS(scan_type, scan_balance));
+
+DECLARE_HOOK(slinux_vh_kswapd_try_to_sleep,
+             TP_PROTO(void *unused),
+             TP_ARGS(unused));
+
+DECLARE_HOOK(slinux_vh_wakeup_kswapd,
+             TP_PROTO(void *unused),
+             TP_ARGS(unused));
+
+#endif /* _TRACE_HOOK_VMSCAN_H */
+/* This part must be outside protection */
+#include <trace/define_trace.h>
+
+
+
+
+
+// slinux_hooks.h
+#include <linux/tracepoint.h>
+#define DECLARE_HOOK DECLARE_TRACE
+
+
+
+
+// tracepoint.h
+
+#define DECLARE_TRACE(name, proto, args)				\
+    __DECLARE_TRACE(name, PARAMS(proto), PARAMS(args),		\
+            cpu_online(raw_smp_processor_id()),		\
+            PARAMS(void *__data, proto),			\
+            PARAMS(__data, args))
+
+
+#define __DECLARE_TRACE(name, proto, args, cond, data_proto, data_args) \
+    extern int __traceiter_##name(data_proto);			\                       // __traceiter_slinux_vh_set_scan_balance
+    DECLARE_STATIC_CALL(tp_func_##name, __traceiter_##name);	\                       // static key define
+    extern struct tracepoint __tracepoint_##name;			\               // extern struct tracepoint __tracepoint_slinux_vh_set_scan_balance
+    static inline void trace_##name(proto)				\               // trace_slinux_vh_set_scan_balance
+    {								\
+        if (static_key_false(&__tracepoint_##name.key))		\
+            __DO_TRACE(name,				\
+                TP_PROTO(data_proto),			\
+                TP_ARGS(data_args),			\
+                TP_CONDITION(cond), 0);			\
+        if (IS_ENABLED(CONFIG_LOCKDEP) && (cond)) {		\
+            rcu_read_lock_sched_notrace();			\
+            rcu_dereference_sched(__tracepoint_##name.funcs);\
+            rcu_read_unlock_sched_notrace();		\
+        }							\
+    }								\
+    __DECLARE_TRACE_RCU(name, PARAMS(proto), PARAMS(args),		\
+        PARAMS(cond), PARAMS(data_proto), PARAMS(data_args))	\
+    static inline int						\
+    register_trace_##name(void (*probe)(data_proto), void *data)	\               // register_trace_slinux_vh_set_scan_balance
+    {								\
+        return tracepoint_probe_register(&__tracepoint_##name,	\
+                        (void *)probe, data);	\
+    }								\
+    static inline int						\
+    register_trace_prio_##name(void (*probe)(data_proto), void *data,\                  // register_trace_prio_trace_slinux_vh_set_scan_balance
+                   int prio)				\
+    {								\
+        return tracepoint_probe_register_prio(&__tracepoint_##name, \
+                          (void *)probe, data, prio); \
+    }								\
+    static inline int						\
+    unregister_trace_##name(void (*probe)(data_proto), void *data)	\               // unregister_trace_trace_slinux_vh_set_scan_balance
+    {								\
+        return tracepoint_probe_unregister(&__tracepoint_##name,\
+                        (void *)probe, data);	\
+    }								\
+    static inline void						\
+    check_trace_callback_type_##name(void (*cb)(data_proto))	\
+    {								\
+    }								\
+    static inline bool						\
+    trace_##name##_enabled(void)					\               // trace_trace_slinux_vh_set_scan_balance_enabled
+    {								\
+        return static_key_false(&__tracepoint_##name.key);	\
+    }
+
+
+
 refs
 https://www.cnblogs.com/hellokitty2/p/15522289.html
 https://mp.weixin.qq.com/s/1A02qv5SIEgTEvsN1DWzqQ                       // 深度理解 ftrace

@@ -42,8 +42,8 @@ free_list  /* 基于 free_area 按照 MIGRATE_TYPES 将相同尺寸的内存再�
 //TODO - kernel mm MIGRATE_TYPES
 enum migratetype {
         MIGRATE_UNMOVABLE,     /* 不可移动页 内核线性映射 */
-        MIGRATE_MOVABLE,       /* 可移动页 修改pte 迁移物理页 用户空间分配 */
-        MIGRATE_RECLAIMABLE,   /* 不能被移动 但是 可以被回收swap 文件缓存 */
+        MIGRATE_MOVABLE,       /* 频繁 分配 释放 移动 常用 用户空间 */
+        MIGRATE_RECLAIMABLE,   /* 频繁 回收 不关心位置 常用 文件缓存等缓存机制 */
         MIGRATE_PCPTYPES,      /* per_cpu_pageset */
         MIGRATE_HIGHATOMIC = MIGRATE_PCPTYPES,         /* 紧急内存 */
 #ifdef CONFIG_CMA
@@ -63,3 +63,20 @@ static int fallbacks[MIGRATE_TYPES][3] = {
 	[MIGRATE_MOVABLE]     = { MIGRATE_RECLAIMABLE, MIGRATE_UNMOVABLE, MIGRATE_TYPES },
 	[MIGRATE_RECLAIMABLE] = { MIGRATE_UNMOVABLE,   MIGRATE_MOVABLE,   MIGRATE_TYPES },
 };
+
+
+
+        ZONE_DMA
+
+        ZONE_DMA32
+
+Node ── ZONE_NORMAL ────── free_area[10] ───── free_list[MIGRATE_CMA]
+                           ...
+        ZONE_HIGH          ...                 free_list[MIGRATE_MOVABLE]
+                           ...
+                           free_area[0]        free_list[MIGRATE_UNMOVABLE]
+
+                                               free_list[MIGRATE_RECLAIMABLE] ─────── Page - Page - Page
+
+
+
