@@ -526,30 +526,6 @@ PARA3
 PARA4
 
 
-//TODO - armv8 register
-
-x30 lr    链接寄存器 ret 返回
-ELR_ELx   异常链接寄存器 eret 返回
-SP_ELn    异常sp寄存器
-ESR_ELn   同步或者SError异常 表明异常原因
-FAR_ELn   发生同步指令错误、数据错误和对齐错误的虚拟地址
-CPSR_ELx  当前runtime状态寄存器
-SPSR_ELx  备份 CPSR
-CurrentEL 当前EL等级
-
-msr SPSel, #0   // switch to SP_EL0
-msr SPSel, #1   // switch to SP_EL1
-
-EL0 call EL1
-call SVC
-
-EL1 call EL2/3
-HVC to EL2
-SMC to EL3
-
-EL2 call EL3
-SMC to EL3
-
 //TODO - kernel ifdef defined
 #ifdef
 只能判断单个条件

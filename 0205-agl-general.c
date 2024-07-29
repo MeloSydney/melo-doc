@@ -33,7 +33,7 @@ cd /data1/hexudong/git/agl/agl
 
 sudo apt install qemu-system-x86
 
-将构建的映像文件拷贝至Ubuntu机器中。包括：bzImage和ecarx-image-weston-qemux86-64.ext4
+将构建的映像文件拷贝至Ubuntu机器中。包括：bzImage和-image-weston-qemux86-64.ext4
 
 路径: agl/build/tmp/deploy/images/qemux86-64
 
@@ -51,7 +51,7 @@ qemu-system-x86_64 \
   -vga virtio \
   -devicevirtio-net-pci,netdev=net0,mac=52:54:00:12:35:02 \
   -netdevuser,id=net0,hostfwd=tcp::2222-:22,hostfwd=tcp::3333-:3333 \
-  -drivefile=ecarx-image-weston-qemux86-64.ext4,if=virtio,format=raw \
+  -drivefile=-image-weston-qemux86-64.ext4,if=virtio,format=raw \
   -kernel bzImage \
   -usb \
   -device usb-tablet \
@@ -68,5 +68,5 @@ qemu-system-x86_64 \
 
 sudo ./start-agl-qemu4.sh
 
-/meta-ecarx-bsp/meta-amd/conf/machine/amd-evb.conf:PREFERRED_VERSION_weston= "8.0.0"
+/meta--bsp/meta-amd/conf/machine/amd-evb.conf:PREFERRED_VERSION_weston= "8.0.0"
 

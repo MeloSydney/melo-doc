@@ -41,47 +41,45 @@ struct ion_buffer {
 
 oms_remote: oms_remote{
 	status = "okay";
-	compatible = "ecarx,dfs-video-core";
-	sequece-inst = /bits/ 16 <0>;	//video_##sequece-inst##dfsc
-	data-id		 = <0x2ED1E3F5 0x20102A9E>;
-	ctrl-id		 = <0x55F5A0D0 0xCE0153B0>;
+	compatible = "video";
+	sequece-inst = /bits/ 16 <0>;	//video_##sequece-inst##chnlc
 	video-width	 = <1920>;
 	video-height = <1080>;
 	video-fmt 	 = "UYVY";
 	video-fps    = <30>;
-	dfsc-rmem	 = "dfs-cam0-rmem";   // ion 保留内存
-	depend-on	 = <&dfs_device>;
+	chnlc-rmem	 = "cam0-rmem";   // ion 保留内存
+	depend-on	 = <&chnl_device>;
 };
 
 reserved-memory {
-	dfs-cam0-rmem {   // ion 保留内存
+	chnl-cam0-rmem {   // ion 保留内存
 		compatible = "shared-dma-pool";
 		size = <0x0 0x1000000>;
 		//16M, 1920*1080*2*4 + offset(128) < 16*1024*1024
 		alloc-ranges = <0xF 0x3E000000 0x0 0x1000000>;
 		/*customize fixed type, ref to uapi/linux/ion.h ION_HEAP_TYPE_   */
 		type = /bits/ 16 <10>;
-		linux,dfs_camerai0_rmem;
+		linux,chnl_camerai0_rmem;
 	};
 };
 
 
 static struct ion_heap_ops ion_rmem_ops = {
-	.allocate = ion_dfs_rmem_allocate,
-	.free = ion_dfs_rmem_free,
+	.allocate = ion_chnl_rmem_allocate,
+	.free = ion_chnl_rmem_free,
 };
 
 
-ion_dfs_heap_init(struct dfsc_dev *ddev, const char *node_name)   /* node_name "dfs-cam0-rmem" */
+ion_chnl_heap_init(struct chnlc_dev *ddev, const char *node_name)   /* node_name "chnl-cam0-rmem" */
 	np = of_find_node_by_name(NULL, node_name);  // 找到dts node
-	if (dfs_addr_info(np, &ioc_heaps->dfs_rmem_addr, &ioc_heaps->dfs_rmem_size) < 0)  /* 地址和长度 */
+	if (chnl_addr_info(np, &ioc_heaps->chnl_rmem_addr, &ioc_heaps->chnl_rmem_size) < 0)  /* 地址和长度 */
 		if (of_property_read_u32_array(np, "alloc-ranges", mem_arr, ARRAY_SIZE(mem_arr)))
-		dfs_addr = mem_arr[0];
-		dfs_addr = dfs_addr << 32 | mem_arr[1];
-		dfs_mem_size = mem_arr[2];
-		dfs_mem_size = dfs_mem_size << 32 | mem_arr[3];
-		*paddr = dfs_addr;
-		*len = dfs_mem_size;
+		chnl_addr = mem_arr[0];
+		chnl_addr = chnl_addr << 32 | mem_arr[1];
+		chnl_mem_size = mem_arr[2];
+		chnl_mem_size = chnl_mem_size << 32 | mem_arr[3];
+		*paddr = chnl_addr;
+		*len = chnl_mem_size;
 	if (of_property_read_u16(np, "type", &type))  /* type类型 */
 	ioc_heaps->heap.ops = &ion_rmem_ops;
 	ioc_heaps->heap.type = (enum ion_heap_type)type;
@@ -106,15 +104,15 @@ struct ion_device {
 
 
 /* ion 保留内存 申请 camera-hal */
-SetDataSizeAndOffsetDfs(size_t data_size, int offset, const std::string mDevicePath)
+SetDataSizeAndOffsetchnl(size_t data_size, int offset, const std::string mDevicePath)
 	mIonFd = ion_open();
 	ret = ion_query_heap_cnt(mIonFd, &heap_cnt);
 	struct ion_heap_data heap_data[heap_cnt];
 	ret = ion_query_get_heaps(mIonFd, heap_cnt, heap_data);
-	if (0 == mDevicePath.compare("/dev/video0dfsc"))
-		type = (enum ion_heap_type)10;//ION_HEAP_TYPE_CAM_DFSC0;
-	else if (0 == mDevicePath.compare("/dev/video1dfsc"))
-		type = (enum ion_heap_type)11;//ION_HEAP_TYPE_CAM_DFSC1;
+	if (0 == mDevicePath.compare("/dev/video0chnlc"))
+		type = (enum ion_heap_type)10;//ION_HEAP_TYPE_CAM_chnlC0;
+	else if (0 == mDevicePath.compare("/dev/video1chnlc"))
+		type = (enum ion_heap_type)11;//ION_HEAP_TYPE_CAM_chnlC1;
 	for (i = 0; i < heap_cnt; i++) {
 		if (heap_data[i].type == type) {
 			heap_mask = 1 << heap_data[i].heap_id;
@@ -125,10 +123,10 @@ SetDataSizeAndOffsetDfs(size_t data_size, int offset, const std::string mDeviceP
 
 
 EnqueueRequest(std::shared_ptr<default_camera_hal::CaptureRequest> request)
-	request_context->camera_buffer->SetDataSizeAndOffsetDfs(requiredSize - CIF_BUFFER_HEADER_LEN, \
+	request_context->camera_buffer->SetDataSizeAndOffsetchnl(requiredSize - CIF_BUFFER_HEADER_LEN, \
 								CIF_BUFFER_HEADER_LEN,
 								getDevicePath());
-	if (IoctlLocked(VIDIOC_QBUF, &device_buffer) < 0)   /* 将ion 保留内存交给dfsc */
+	if (IoctlLocked(VIDIOC_QBUF, &device_buffer) < 0)   /* 将ion 保留内存交给chnlc */
 
 
 /* ion 子系统 初始化 */
@@ -162,7 +160,7 @@ ion_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 							continue;
 						buffer = ion_buffer_create(heap, dev, len, flags);
 							struct ion_buffer *buffer;
-							/* ion_dfs_rmem_allocate */
+							/* ion_chnl_rmem_allocate */
 							ret = heap->ops->allocate(heap, buffer, len, flags);
 				exp_info.ops = &dma_buf_ops;
 				exp_info.size = buffer->size;

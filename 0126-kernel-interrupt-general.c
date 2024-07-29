@@ -16,10 +16,10 @@
 
 //TODO - kernel GIC
 
-PPI 私有外设中断
-SPI 共享外设中断
-SGI 软件产生中断 用户可编程
-LPI locality-specific peripheral interrupt MSI/MSI-X
+PPI 16-31 私有外设中断 [类似 x86上的LAPIC Timer Interrupt]
+SPI 32-1019 共享外设中断 [GICD_SETSPI_NSR设置中断，GICD_CLRSPI_NSR清除中断]
+SGI 0-15 软件产生中断 通过写GICD_SGIR寄存器来触发一个中断事件 [类似 X86 IPI中断]
+LPI 8192-xx locality-specific peripheral interrupt MSI/MSI-X
 IRI interrupt routing infrastructure
 ITS interrupt translation service 翻译message-base interrupt成LPI
 IRR interrupt request register pending状态的中断

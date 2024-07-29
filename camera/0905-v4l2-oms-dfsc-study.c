@@ -2,7 +2,6 @@
 //TODO - kernel v4l2 doc
 
 https://www.cnblogs.com/LoyenWang/p/15456230.html
-https://ecarxgroup.feishu.cn/file/boxcns9nibYT4lp020tozHZ7m5g
 https://www.cnblogs.com/silence-hust/p/4464291.html
 https://deepinout.com/v4l2-tutorials/linux-v4l2-architecture.html
 https://blog.csdn.net/seiyaaa/article/details/120199720
@@ -12,21 +11,21 @@ https://blog.csdn.net/hnllei/article/details/45564125
 https://zhuanlan.zhihu.com/p/443727970
 https://ciellee.blog.csdn.net/article/details/109628739  /*ion和v4l2 dmabuf*/
 
-//TODO - kernel dfsc
+//TODO - kernel chnlc
 
-drivers/media/platform/dfs-camera/dfsc-core.c         /* vicam v4l2驱动 */
-drivers/media/platform/dfs-camera/dfsc-vid-cap.c
-drivers/media/platform/dfs-camera/dfsc-vid-common.c
-drivers/media/platform/dfs-camera/ion_dfs_heap.c      /* 保留内存 ion */
+drivers/media/platform/chnl-camera/chnlc-core.c         /* vicam v4l2驱动 */
+drivers/media/platform/chnl-camera/chnlc-vid-cap.c
+drivers/media/platform/chnl-camera/chnlc-vid-common.c
+drivers/media/platform/chnl-camera/ion_chnl_heap.c      /* 保留内存 ion */
 drivers/media/platform/siengine/sensor/max9xx_cam.c   /* 物理摄像头 sensor */
-drivers/misc/ecarxdfs/dfs_oms_impl.c                  /* dfs内核态驱动 */
-drivers/misc/ecarxdfs/dfs_rpmsg_impl.c
+drivers/misc/driver/chnl_oms_impl.c                  /* chnl内核态驱动 */
+drivers/misc/driver/chnl_rpmsg_impl.c
 
 
 /*
   1. 如何分配内存 ? 应用层先申请ion内存 有对应的ion设备节点和heap, 然后通过video的ioctl QBUF将dmabuf fd传给内核态v4l2
-  2. 数据流如何工作 ? 应用层有epoll机制等待数据帧, dfs内核态收到数据后 触发v4l2的done_list机制 并唤醒上层应用
-  3. 上层应用如何工作 ? epoll阻塞等待底层dfsc数据, 如果被唤醒 DQBUF取出对应的内存消费, 消费完毕后 QBUF将内存还给v4l2, v4l2再通知远端dfs该内存可用
+  2. 数据流如何工作 ? 应用层有epoll机制等待数据帧, chnl内核态收到数据后 触发v4l2的done_list机制 并唤醒上层应用
+  3. 上层应用如何工作 ? epoll阻塞等待底层chnlc数据, 如果被唤醒 DQBUF取出对应的内存消费, 消费完毕后 QBUF将内存还给v4l2, v4l2再通知远端chnl该内存可用
   4. 双端内存如何分配 ? master是物理摄像头端, 使用系统分配的dmabuf 通过elink dma匿名页, slave是虚拟摄像头端, 系统有保留的4*8M=32M内存, 提供给v4l2使用
 */
 
@@ -73,10 +72,10 @@ static const struct v4l2_ioctl_info v4l2_ioctls[] = {
 /* v4l2 stream off */
 IOCTL_INFO(VIDIOC_STREAMOFF, v4l_streamoff, v4l_print_buftype, INFO_FL_PRIO | INFO_FL_QUEUE),
 	v4l_streamoff(const struct v4l2_ioctl_ops *ops, struct file *file, void *fh, void *arg)
-		return ops->vidioc_streamoff(file, fh, *(unsigned int *)arg); /* dfsc_streamoff */
-			dfsc_streamoff(struct file *file, void *priv, enum v4l2_buf_type type)
-				struct dfsc_dev *ddev = video_drvdata(file);
-				ddev->dfs_stream_status = 0;
+		return ops->vidioc_streamoff(file, fh, *(unsigned int *)arg); /* chnlc_streamoff */
+			chnlc_streamoff(struct file *file, void *priv, enum v4l2_buf_type type)
+				struct chnlc_dev *ddev = video_drvdata(file);
+				ddev->chnl_stream_status = 0;
 				ret = vb2_ioctl_streamoff(file, priv, type);
 					return vb2_streamoff(vdev->queue, i);
 						return vb2_core_streamoff(q, type);
@@ -127,26 +126,26 @@ __video_do_ioctl(struct file *file, unsigned int cmd, void *arg)
 	ret = info->func(ops, file, fh, arg);
 
 
-/* dfs_rpmsg_impl.c
-   dfs_rpmsg_recv_work 负责接收dfs传递的rpmsg控制消息 并处理 理论上这个线程33ms被唤醒一次
+/* chnl_rpmsg_impl.c
+   chnl_rpmsg_recv_work 负责接收chnl传递的rpmsg控制消息 并处理 理论上这个线程33ms被唤醒一次
  */
-dfs_drv_probe(struct platform_device *pdev)
-	dfs_rpmsg_rdata.rpmsg_recv_task = kthread_create(dfs_rpmsg_recv_work, NULL, "dfs_rpmsg_recv_task");
-		dfs_rpmsg_recv_work(void *args)
+chnl_drv_probe(struct platform_device *pdev)
+	chnl_rpmsg_rdata.rpmsg_recv_task = kthread_create(chnl_rpmsg_recv_work, NULL, "chnl_rpmsg_recv_task");
+		chnl_rpmsg_recv_work(void *args)
 			while(!kthread_should_stop()) {
-				dfs_rpmsg_ringbuf_consume(get_ringbuf(), local_buf, &local_buflen);
+				chnl_rpmsg_ringbuf_consume(get_ringbuf(), local_buf, &local_buflen);
 				init_rpmsg_info(&info, local_buf, local_buflen);
-				dfs_rpmsg_recv_cb(&info);
-					struct dfs_header_info* header_info = NULL;
+				chnl_rpmsg_recv_cb(&info);
+					struct chnl_header_info* header_info = NULL;
 					header_info =  get_header_info(info);
 					if (header_info->message_type == MESSAGE_SIMPLE)
-						dfs_handle_message(simple_info);
+						chnl_handle_message(simple_info);
 							received_func(simple_info->msg_data, simple_info->message_size);
 					else if (header_info->message_type == MESSAGE_COMPLEX)
-						dfs_handle_frame(complex_info);
-							return dfs_oms_handle_frame(complex_info, dquebuf_func);
-								return dfs_oms_dequeuebuf(complex_info, dquebuf_func);
-									ret = dfs_oms_acquire_frame(complex_info, &frame_addr, &frame_size);   /* 从ecarxlink 中 根据key 获取对应信息 pa size */
+						chnl_handle_frame(complex_info);
+							return chnl_oms_handle_frame(complex_info, dquebuf_func);
+								return chnl_oms_dequeuebuf(complex_info, dquebuf_func);
+									ret = chnl_oms_acquire_frame(complex_info, &frame_addr, &frame_size);   /* 从 driver 中 根据key 获取对应信息 pa size */
 										ret = getAddrFromVircamList(key, paddr, psize);
 											return get_src_dst_physAddr_from_shmInfoList(key,vicam_addr,NULL,srcsize,NULL,NULL);
 									dquebuf_func(frame_addr, complex_info->block_index, frame_size);
@@ -183,15 +182,15 @@ struct vb2_v4l2_buffer {
 };
 
 
-/* dfsc-core.c */
+/* chnlc-core.c */
 
-struct dfsc_buffer {
+struct chnlc_buffer {
 	struct vb2_v4l2_buffer  vb;
 	struct list_head	list;
 };
 
 
-struct dfsc_dev {
+struct chnlc_dev {
 	struct v4l2_device		v4l2_dev;
 	struct video_device		vid_cap_dev;
 	u32				        vid_cap_caps;
@@ -202,11 +201,11 @@ struct dfsc_dev {
 
 
 /* /dev/videoX */
-static const struct v4l2_file_operations dfsc_fops = {
+static const struct v4l2_file_operations chnlc_fops = {
 	.owner		= THIS_MODULE,
 //	.open           = v4l2_fh_open,
-	.open           = dfsc_fop_open,
-	.release        = dfsc_fop_release,
+	.open           = chnlc_fop_open,
+	.release        = chnlc_fop_release,
 	.read           = vb2_fop_read,
 	.write          = vb2_fop_write,
 	.poll		    = vb2_fop_poll,
@@ -215,7 +214,7 @@ static const struct v4l2_file_operations dfsc_fops = {
 };
 
 
-dfsc_fop_release(struct file *file)
+chnlc_fop_release(struct file *file)
 	return vb2_fop_release(file);
 		struct video_device *vdev = video_devdata(file);
 		struct mutex *lock = vdev->queue->lock ? vdev->queue->lock : vdev->lock;
@@ -228,15 +227,15 @@ dfsc_fop_release(struct file *file)
 /* ioctl 交互
    v4l2_ioctls 最终会调用到这个地方
  */
-static const struct v4l2_ioctl_ops dfsc_ioctl_ops = {
+static const struct v4l2_ioctl_ops chnlc_ioctl_ops = {
 	.vidioc_querycap		    = vidioc_querycap,
-	.vidioc_enum_fmt_vid_cap	= dfsc_enum_fmt_cap,
-	.vidioc_g_fmt_vid_cap		= dfsc_g_fmt_cap,
-	.vidioc_try_fmt_vid_cap		= dfsc_try_fmt_cap,
-	.vidioc_s_fmt_vid_cap		= dfsc_s_fmt_cap,
-	.vidioc_g_fmt_vid_cap_mplane	= dfsc_g_fmt_cap_mplane,
-	.vidioc_try_fmt_vid_cap_mplane	= dfsc_try_fmt_cap_mplane,
-	.vidioc_s_fmt_vid_cap_mplane	= dfsc_s_fmt_cap_mplane,
+	.vidioc_enum_fmt_vid_cap	= chnlc_enum_fmt_cap,
+	.vidioc_g_fmt_vid_cap		= chnlc_g_fmt_cap,
+	.vidioc_try_fmt_vid_cap		= chnlc_try_fmt_cap,
+	.vidioc_s_fmt_vid_cap		= chnlc_s_fmt_cap,
+	.vidioc_g_fmt_vid_cap_mplane	= chnlc_g_fmt_cap_mplane,
+	.vidioc_try_fmt_vid_cap_mplane	= chnlc_try_fmt_cap_mplane,
+	.vidioc_s_fmt_vid_cap_mplane	= chnlc_s_fmt_cap_mplane,
 	.vidioc_enum_framesizes		= vidioc_enum_framesizes,
 	.vidioc_enum_frameintervals	= vidioc_enum_frameintervals,
 	.vidioc_reqbufs			= vb2_ioctl_reqbufs,
@@ -246,8 +245,8 @@ static const struct v4l2_ioctl_ops dfsc_ioctl_ops = {
 	.vidioc_qbuf			= vb2_ioctl_qbuf,
 	.vidioc_dqbuf			= vb2_ioctl_dqbuf,
 	.vidioc_expbuf			= vb2_ioctl_expbuf,
-	.vidioc_streamon		= dfsc_streamon,
-	.vidioc_streamoff		= dfsc_streamoff,
+	.vidioc_streamon		= chnlc_streamon,
+	.vidioc_streamoff		= chnlc_streamoff,
 	.vidioc_unsubscribe_event	= v4l2_event_unsubscribe,
 };
 
@@ -260,18 +259,18 @@ vb2_ioctl_qbuf(struct file *file, void *priv, struct v4l2_buffer *p)
 
 
 
-/* dfsc_core.c
-   dfsc 初始化时 调用dfs内核态驱动接口 dfs_init 初始化rpmsg控制通道
+/* chnlc_core.c
+   chnlc 初始化时 调用chnl内核态驱动接口 chnl_init 初始化rpmsg控制通道
 */
-dfsc_probe(struct platform_device *pdev)
-	data_attrs.dquebuf_func = dfs_data_callback_func;
-	ret = dfs_init(CHANNEL_ID, &data_attrs);
+chnlc_probe(struct platform_device *pdev)
+	data_attrs.dquebuf_func = chnl_data_callback_func;
+	ret = chnl_init(CHANNEL_ID, &data_attrs);
 
 
-/* 当dfs内核态收到master传来的数据时 通知v4l2 */
-dfs_data_callback_func(const uint64_t phyaddr, uint32_t index, uint32_t size)
-	if (!list_empty(&(dfsc_devs[0]->vid_cap_active))) {
-		list_for_each_entry_safe(vid_cap_buf, n,  &(dfsc_devs[0]->vid_cap_active), list) {
+/* 当chnl内核态收到master传来的数据时 通知v4l2 */
+chnl_data_callback_func(const uint64_t phyaddr, uint32_t index, uint32_t size)
+	if (!list_empty(&(chnlc_devs[0]->vid_cap_active))) {
+		list_for_each_entry_safe(vid_cap_buf, n,  &(chnlc_devs[0]->vid_cap_active), list) {
 			if (phyaddr == vb2_dma_contig_plane_dma_addr(&vid_cap_buf->vb.vb2_buf, 0)) {
 				sucess = 1;
 				list_del(&vid_cap_buf->list);
@@ -322,33 +321,33 @@ struct v4l2_device {
 	char name[V4L2_DEVICE_NAME_SIZE];
 };
 
-static unsigned int allocators[DFSC_MAX_DEVS] = { [0 ... (DFSC_MAX_DEVS - 1)] = 1 };   /* 默认使用 dma-contig */
+static unsigned int allocators[chnlC_MAX_DEVS] = { [0 ... (chnlC_MAX_DEVS - 1)] = 1 };   /* 默认使用 dma-contig */
 MODULE_PARM_DESC(allocators, " memory allocator selection, default is 0.\n"
 			     "\t\t    0 == vmalloc\n"
 			     "\t\t    1 == dma-contig");
 
-/* dfsc_core.c
-   dfsc 初始化时 初始化 vb2_queue
+/* chnlc_core.c
+   chnlc 初始化时 初始化 vb2_queue
 */
-dfsc_probe(struct platform_device *pdev)
-	dfsc_create_instance(struct platform_device *pdev, int inst)
-		snprintf(dev->v4l2_dev.name, sizeof(dev->v4l2_dev.name), "%s-%03d", DFSC_MODULE_NAME, inst);
+chnlc_probe(struct platform_device *pdev)
+	chnlc_create_instance(struct platform_device *pdev, int inst)
+		snprintf(dev->v4l2_dev.name, sizeof(dev->v4l2_dev.name), "%s-%03d", chnlC_MODULE_NAME, inst);
 		ret = v4l2_device_register(&pdev->dev, &dev->v4l2_dev);
-		ret = dfsc_detect_feature_set(dev);
+		ret = chnlc_detect_feature_set(dev);
 			dev->multiplanar = 1;
 			dev->has_vid_cap = 0x0001;
-		dfsc_set_capabilities(dev);        /* V4L2_CAP_VIDEO_CAPTURE_MPLANE | V4L2_CAP_STREAMING | V4L2_CAP_READWRITE */
-		dev->fmt_cap = &dfsc_formats[0];
-		dfsc_create_queues(struct dfsc_dev *dev)
-			ret = dfsc_create_queue(dev, &dev->vb_vid_cap_q, V4L2_BUF_TYPE_VIDEO_CAPTURE, 2, &dfsc_vid_cap_qops);
+		chnlc_set_capabilities(dev);        /* V4L2_CAP_VIDEO_CAPTURE_MPLANE | V4L2_CAP_STREAMING | V4L2_CAP_READWRITE */
+		dev->fmt_cap = &chnlc_formats[0];
+		chnlc_create_queues(struct chnlc_dev *dev)
+			ret = chnlc_create_queue(dev, &dev->vb_vid_cap_q, V4L2_BUF_TYPE_VIDEO_CAPTURE, 2, &chnlc_vid_cap_qops);
 				q->min_buffers_needed = min_buffers_needed;  /* 2 */
-				/* dfsc_create_queue(struct dfsc_dev *dev, struct vb2_queue *q, u32 buf_type, unsigned int min_buffers_needed, const struct vb2_ops *ops) */
+				/* chnlc_create_queue(struct chnlc_dev *dev, struct vb2_queue *q, u32 buf_type, unsigned int min_buffers_needed, const struct vb2_ops *ops) */
 				if (buf_type == V4L2_BUF_TYPE_VIDEO_CAPTURE && dev->multiplanar)
 					buf_type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
 				q->type = buf_type;
 				q->io_modes = VB2_MMAP | VB2_DMABUF;
 				q->io_modes |= V4L2_TYPE_IS_OUTPUT(buf_type) ?  VB2_WRITE : VB2_READ;
-				q->ops = ops;      /* dfsc_vid_cap_qops */
+				q->ops = ops;      /* chnlc_vid_cap_qops */
 				q->mem_ops = allocators[dev->inst] == 1 ? &vb2_dma_contig_memops : &vb2_vmalloc_memops;     /* vb2_dma_contig_memops */
 				q->min_buffers_needed = min_buffers_needed;    /* 2 */
 				q->lock = &dev->mutex;
@@ -364,13 +363,13 @@ dfsc_probe(struct platform_device *pdev)
 							q->memory = VB2_MEMORY_UNKNOWN;
 							if (q->name[0] == '\0')
 								snprintf(q->name, sizeof(q->name), "%s-%p", q->is_output ? "out" : "cap", q);
-		ret = dfsc_create_devnodes(pdev, dev, inst);
+		ret = chnlc_create_devnodes(pdev, dev, inst);
 			struct video_device *vfd;
 			vfd = &dev->vid_cap_dev;
-			snprintf(vfd->name, sizeof(vfd->name), "dfsc-%03d-vid-cap", inst);
-			snprintf(dev->device_names[inst], sizeof( dev->device_names[inst] ), "video%u%s", inst, DFSC_MODULE_NAME);
-			vfd->fops = &dfsc_fops;
-			vfd->ioctl_ops = &dfsc_ioctl_ops;
+			snprintf(vfd->name, sizeof(vfd->name), "chnlc-%03d-vid-cap", inst);
+			snprintf(dev->device_names[inst], sizeof( dev->device_names[inst] ), "video%u%s", inst, chnlC_MODULE_NAME);
+			vfd->fops = &chnlc_fops;
+			vfd->ioctl_ops = &chnlc_ioctl_ops;
 			vfd->device_caps = dev->vid_cap_caps;
 			vfd->queue = &dev->vb_vid_cap_q;
 			vfd->dev.init_name = dev->device_names[inst];
@@ -436,10 +435,10 @@ dma_buf_dynamic_attach(struct dma_buf *dmabuf, struct device *dev, const struct 
 
 
 
-/* dfsc-vid-cap.c
+/* chnlc-vid-cap.c
    vb2_queue的ops 通过 call_qop 这个宏来调用 queue ops
 */
-const struct vb2_ops dfsc_vid_cap_qops = {
+const struct vb2_ops chnlc_vid_cap_qops = {
 	.queue_setup		= vid_cap_queue_setup,
 	.buf_prepare		= vid_cap_buf_prepare,
 	.buf_finish		= vid_cap_buf_finish,
@@ -451,7 +450,7 @@ const struct vb2_ops dfsc_vid_cap_qops = {
 	.wait_finish		= vb2_ops_wait_finish,
 };
 
-dfsc_streamoff(struct file *file, void *priv, enum v4l2_buf_type type)
+chnlc_streamoff(struct file *file, void *priv, enum v4l2_buf_type type)
 	vb2_ioctl_streamoff(struct file *file, void *priv, enum v4l2_buf_type i)
 		if (vb2_queue_is_busy(vdev->queue, file))  /* return q->owner && q->owner != file->private_data; */
 			return -EBUSY;
@@ -463,12 +462,12 @@ dfsc_streamoff(struct file *file, void *priv, enum v4l2_buf_type type)
 				q->waiting_for_buffers = !q->is_output;
 				q->last_buffer_dequeued = false;
 					vid_cap_stop_streaming(struct vb2_queue *vq)
-						dfs_warp_make_clean(get_dfs_oms_key(i));
+						chnl_warp_make_clean(get_chnl_oms_key(i));
 							return rmNodeOfVircam(key);
-								ret = ecarxlink_request_remove_remote_vicamNode(&local_sb_info);
+								ret = request_remove_remote_vicamNode(&local_sb_info);
 
 /* v4l2 set format */
-dfsc_s_fmt_vid_cap(struct file *file, void *priv, struct v4l2_format *f)
+chnlc_s_fmt_vid_cap(struct file *file, void *priv, struct v4l2_format *f)
 	struct vb2_queue *q = &dev->vb_vid_cap_q;
 	if (vb2_is_busy(q))   /* return (q->num_buffers > 0); */
 		return -EBUSY;
@@ -567,10 +566,10 @@ ioctl(fd, VIDIOC_QBUF, xx)
 											list_add_tail(&buf->list, &dev->vid_cap_active);
 											phy_addr = vb2_dma_contig_plane_dma_addr(&vbuf->vb2_buf, 0); /* 这个地方为什么已经可以拿到 pa ? */
 											if (dev->vb2_paddr[vbuf->vb2_buf.index]  == 0)
-												dfs_oms_initbuf(CHANNEL_ID, vbuf->vb2_buf.index, phy_addr, dev->pix.plane_fmt[0].sizeimage + CAMERA_BUF_OFFSET);
+												chnl_oms_initbuf(CHANNEL_ID, vbuf->vb2_buf.index, phy_addr, dev->pix.plane_fmt[0].sizeimage + CAMERA_BUF_OFFSET);
 												dev->vb2_paddr[vbuf->vb2_buf.index] =  phy_addr;
 											else
-												dfs_oms_queuebuf(CHANNEL_ID, vbuf->vb2_buf.index, phy_addr);
+												chnl_oms_queuebuf(CHANNEL_ID, vbuf->vb2_buf.index, phy_addr);
 							if (q->streaming && !q->start_streaming_called && q->queued_count >= q->min_buffers_needed) {
 								ret = vb2_start_streaming(q);
 							}
@@ -595,7 +594,7 @@ __buf_prepare(struct vb2_buffer *vb)
 					ret = sg_alloc_table_from_pages(sgt, frame_vector_pages(vec), n_pages, offset, size, GFP_KERNEL); /* 最终转换成sgt */
 					buf->dma_addr = sg_dma_address(sgt->sgl); /* pa 赋值 */
 		break;
-	case VB2_MEMORY_DMABUF: /* dfsc type */
+	case VB2_MEMORY_DMABUF: /* chnlc type */
 		ret = __prepare_dmabuf(vb);
 			struct vb2_plane planes[VB2_MAX_PLANES];
 			struct vb2_queue *q = vb->vb2_queue;
@@ -667,7 +666,7 @@ ioctl(fd, VIDIOC_STREAMON, xx)
 								vid_cap_start_streaming(struct vb2_queue *vq, unsigned count)
 									atomic_set(&dev->is_streamon, 1);
 									atomic_set(&dev->last_frame_cond, 0);
-									dfs_write(dev->ctrl_channel_id, "1", strlen("1"));  /* 通知master streaming on */
+									chnl_write(dev->ctrl_channel_id, "1", strlen("1"));  /* 通知master streaming on */
 						q->streaming = 1;
 
 
@@ -719,29 +718,29 @@ ioctl(fd, VIDIOC_DQBUF, xx)
 
 
 
-/* dfsc 收到数据 */
-dfs_rpmsg_recv_cb(struct rpmsg_info* info)
+/* chnlc 收到数据 */
+chnl_rpmsg_recv_cb(struct rpmsg_info* info)
 	complex_info = get_complex_info(info);
-	dfs_handle_frame(complex_info);
-		struct dfs_chnl_info* dfs_chinfo;
-		dfs_chinfo = dfs_find_ept_locked(complex_info->channel_id);
-		return dfs_oms_handle_frame(complex_info, dfs_chinfo);
-			return dfs_oms_dequeuebuf(complex_info, dfs_chinfo);
-				getbuf_func = dfs_chinfo->attrs.getbuf_func;
-				(void)getbuf_func(frame_addr, complex_info->block_index, frame_size, dfs_chinfo->attrs.priv);
-					dfs_data_callback_func(const uint64_t phyaddr, uint32_t index, uint32_t size, void *priv)
+	chnl_handle_frame(complex_info);
+		struct chnl_chnl_info* chnl_chinfo;
+		chnl_chinfo = chnl_find_ept_locked(complex_info->channel_id);
+		return chnl_oms_handle_frame(complex_info, chnl_chinfo);
+			return chnl_oms_dequeuebuf(complex_info, chnl_chinfo);
+				getbuf_func = chnl_chinfo->attrs.getbuf_func;
+				(void)getbuf_func(frame_addr, complex_info->block_index, frame_size, chnl_chinfo->attrs.priv);
+					chnl_data_callback_func(const uint64_t phyaddr, uint32_t index, uint32_t size, void *priv)
 						if (fail)
-							dfs_oms_queuebuf(CHANNEL_ID, index, dfsc_devs[0]->vb2_paddr[index]);
+							chnl_oms_queuebuf(CHANNEL_ID, index, chnlc_devs[0]->vb2_paddr[index]);
 								init_complex_info(&complex_info, 0, channel_id);
 									init_header_info(&info->header_info, MESSAGE_COMPLEX);
 									info->message_size = size;
 									info->channel_id = channel_id;
 								complex_info.oper_id = OPERID_DATASYNC_ACK;
 								complex_info.block_index = block_index;
-								return dfs_notify(channel_id, (char *)&complex_info, sizeof(complex_info));
-									ret = dfs_elink_notify_locked(channel_id, data, size, dfs_chinfo);
-										ret = dfs_notify_base((char *)pkt, siengine_rpmsg_packet_size(pkt), dfs_chinfo);
-											ret = rpmsg_send(dfs_chinfo->ept, data, size);
+								return chnl_notify(channel_id, (char *)&complex_info, sizeof(complex_info));
+									ret = chnl_elink_notify_locked(channel_id, data, size, chnl_chinfo);
+										ret = chnl_notify_base((char *)pkt, siengine_rpmsg_packet_size(pkt), chnl_chinfo);
+											ret = rpmsg_send(chnl_chinfo->ept, data, size);
 						if (success)
 							vb2_buffer_done(&vid_cap_buf->vb.vb2_buf, VB2_BUF_STATE_DONE);  /* 加入 done_list 应用可以通过dqueue消费 */
 								list_add_tail(&vb->done_entry, &q->done_list);
@@ -755,14 +754,14 @@ dfs_rpmsg_recv_cb(struct rpmsg_info* info)
 
 
 
-dfs_oms_putbuf(uint64_t channel_id, uint32_t block_index, uint64_t buffer)
+chnl_oms_putbuf(uint64_t channel_id, uint32_t block_index, uint64_t buffer)
 	init_complex_info(&complex_info, 0, channel_id);
-	complex_info.oper_id = OPERID_DATASYNC_ACK;   /* master dfs 标记buf可用 */
+	complex_info.oper_id = OPERID_DATASYNC_ACK;   /* master chnl 标记buf可用 */
 	complex_info.block_index = block_index;
-	return dfs_notify(channel_id, (char *)&complex_info, sizeof(complex_info));
-		ret = dfs_elink_notify_locked(channel_id, data, size, dfs_chinfo);
-			ret = dfs_notify_base((char *)pkt, siengine_rpmsg_packet_size(pkt), dfs_chinfo);
-				ret = rpmsg_send(dfs_chinfo->ept, data, size);
+	return chnl_notify(channel_id, (char *)&complex_info, sizeof(complex_info));
+		ret = chnl_elink_notify_locked(channel_id, data, size, chnl_chinfo);
+			ret = chnl_notify_base((char *)pkt, siengine_rpmsg_packet_size(pkt), chnl_chinfo);
+				ret = rpmsg_send(chnl_chinfo->ept, data, size);
 
 
 vb2_dma_contig_plane_dma_addr(struct vb2_buffer *vb, unsigned int plane_no)
@@ -805,7 +804,7 @@ __fill_vb2_buffer(struct vb2_buffer *vb, struct vb2_plane *planes)
 /* v4l2_wrapper.cpp
    应用下发 ion 给v4l2
 */
-int v4l2_wrapper_dfs::EnqueueRequest(std::shared_ptr<default_camera_hal::CaptureRequest> request) {
+int v4l2_wrapper_chnl::EnqueueRequest(std::shared_ptr<default_camera_hal::CaptureRequest> request) {
 	v4l2_buffer device_buffer;
 	struct v4l2_plane planes[2];
 	device_buffer.memory = V4L2_MEMORY_DMABUF;
@@ -815,15 +814,15 @@ int v4l2_wrapper_dfs::EnqueueRequest(std::shared_ptr<default_camera_hal::Capture
 	device_buffer.length = 1;
 	if (IoctlLocked(VIDIOC_QUERYBUF, &device_buffer) < 0)
 	/*/data1/shifan/src-DX114/src/aosp/vendor/siengine/hardware/modules/camera/3_4/arc/frame_buffer.cpp*/
-	request_context->camera_buffer->SetDataSizeAndOffsetDfs(requiredSize-CIF_BUFFER_HEADER_LEN, CIF_BUFFER_HEADER_LEN, getDevicePath());
+	request_context->camera_buffer->SetDataSizeAndOffsetchnl(requiredSize-CIF_BUFFER_HEADER_LEN, CIF_BUFFER_HEADER_LEN, getDevicePath());
 		enum ion_heap_type type;
 		ret = ion_query_heap_cnt(mIonFd, &heap_cnt);
 		struct ion_heap_data heap_data[heap_cnt];
 		ret = ion_query_get_heaps(mIonFd, heap_cnt, heap_data);
-		if (0 == mDevicePath.compare("/dev/video0dfsc")) {
-			type = (enum ion_heap_type)10;//ION_HEAP_TYPE_CAM_DFSC0;
-		} else if (0 == mDevicePath.compare("/dev/video1dfsc")) {
-			type = (enum ion_heap_type)11;//ION_HEAP_TYPE_CAM_DFSC1;
+		if (0 == mDevicePath.compare("/dev/video0chnlc")) {
+			type = (enum ion_heap_type)10;//ION_HEAP_TYPE_CAM_chnlC0;
+		} else if (0 == mDevicePath.compare("/dev/video1chnlc")) {
+			type = (enum ion_heap_type)11;//ION_HEAP_TYPE_CAM_chnlC1;
 		}
 		for (i = 0; i < heap_cnt; i++) {
 			if (heap_data[i].type == type) {
@@ -844,14 +843,14 @@ int v4l2_wrapper_dfs::EnqueueRequest(std::shared_ptr<default_camera_hal::Capture
 
 
 
-/* ion_dfs_heap.c */
-ion_add_dfs_heap(void)
-	struct ion_dfs_heap *dfs_heap;
-	dfs_heap = &dfs_heaps;
-	dfs_heap->heap.ops = &ion_rmem_ops;
-	dfs_heap->heap.type = ION_HEAP_TYPE_CUSTOM;
-	dfs_heap->heap.name = "dfs_camera_rmem";
-	ret = ion_device_add_heap(&dfs_heap->heap);
+/* ion_chnl_heap.c */
+ion_add_chnl_heap(void)
+	struct ion_chnl_heap *chnl_heap;
+	chnl_heap = &chnl_heaps;
+	chnl_heap->heap.ops = &ion_rmem_ops;
+	chnl_heap->heap.type = ION_HEAP_TYPE_CUSTOM;
+	chnl_heap->heap.name = "chnl_camera_rmem";
+	ret = ion_device_add_heap(&chnl_heap->heap);
 		__ion_device_add_heap(heap, THIS_MODULE)
 
 

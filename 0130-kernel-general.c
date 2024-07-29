@@ -1,21 +1,5 @@
 
 
-
-//TODO - kernel module 模块加载顺序
-
-vi System.map
-122779 ffff800011bbfa84 d __initcall__kmod_pci_epf_core__337_381_pci_epf_init6
-122780 ffff800011bbfa88 d __initcall__kmod_pci_host_generic__316_88_gen_pci_driver_init6
-122781 ffff800011bbfa8c d __initcall__kmod_pcie_selink_dma__449_1408_siengine_selink_dma_driver_init6
-122782 ffff800011bbfa90 d __initcall__kmod_pcie_selink_rpmsg__361_1348_siengine_selink_rpmsg_driver_init6
-122783 ffff800011bbfa94 d __initcall__kmod_ecarxlink_driver__356_912_ecarxlink_driver_init6
-122784 ffff800011bbfa98 d __initcall__kmod_shm_service__319_380_shm_service_driver_init6
-122785 ffff800011bbfa9c d __initcall__kmod_xen_fbfront__332_720_xenfb_init6
-122786 ffff800011bbfaa0 d __initcall__kmod_efifb__328_616_efifb_driver_init6
-122787 ffff800011bbfaa4 d __initcall__kmod_acpi__321_196_ged_driver_init6
-122788 ffff800011bbfaa8 d __initcall__kmod_ac__322_388_acpi_ac_init6
-
-
 //TODO - kernel dynamic log pr_debug
 
 pr_debug
@@ -170,7 +154,7 @@ BOOT_IMAGE=/boot/vmlinuz-5.13.0-51-generic
 
 //TODO - linux ko disagrees about version of symbols
 
-disagrees about version of symbols get_dfs_exporter  /* 和最后提交hash相关 */
+disagrees about version of symbols get_chnl_exporter  /* 和最后提交hash相关 */
 disagrees about version of module_layout  ?
 
 1 整编
@@ -437,21 +421,21 @@ timeout /t 1
 @echo off
 adb root
 
-md d:\ecarxlog\anr
-md d:\ecarxlog\log
-md d:\ecarxlog\tcpdump
-md d:\ecarxlog\tombstones
-md d:\ecarxlog\recovery
-md d:\ecarxlog\dropbox
-md d:\ecarxlog\databases
+md d:\log\anr
+md d:\log\log
+md d:\log\tcpdump
+md d:\log\tombstones
+md d:\log\recovery
+md d:\log\dropbox
+md d:\log\databases
 
-adb pull /data/anr/ d:\ecarxlog\anr
-adb pull /data/log/ d:\ecarxlog\log
-adb pull /data/tcpdump/ d:\ecarxlog\tcpdump
-adb pull /data/tombstones/ d:\ecarxlog\tombstones
-adb pull /cache/recovery  d:\ecarxlog\recovery
-adb pull /data/system/dropbox  d:\ecarxlog\dropbox
-adb pull /data/data/com.android.providers.media/databases/  d:\ecarxlog\databases
+adb pull /data/anr/ d:\log\anr
+adb pull /data/log/ d:\log\log
+adb pull /data/tcpdump/ d:\log\tcpdump
+adb pull /data/tombstones/ d:\log\tombstones
+adb pull /cache/recovery  d:\log\recovery
+adb pull /data/system/dropbox  d:\log\dropbox
+adb pull /data/data/com.android.providers.media/databases/  d:\log\databases
 
 pause
 
@@ -468,22 +452,6 @@ pause
 //TODO - bash 2>&1
 
 command > output.txt 2>&1		// stderr和stdout全部输出到output.txt
-
-//TODO - bash start camera.sh
-
-#!/bin/bash
-counter=0
-while [ $counter -lt 1000000 ]
-do
-
-	adb -s 2800c21c532e0030  shell input keyevent 3
-	echo $counter
-  	counter=$((counter + 1))
-	sleep 3
-	adb -s 2800c21c532e0030  shell am start -n ecarx.camera.dvr/ecarx.camera.dvr.MainActivity
-
-	sleep 3
-done
 
 
 //TODO - bash timestamp

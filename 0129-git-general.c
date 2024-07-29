@@ -3,7 +3,6 @@
 //TODO - git general
 
 
-git clone **-b e04_sdk1.5_master **"ssh://fan.shi@gerrit.ecarxgroup.com:29418/ICVSBG/CHUDC/AP/E04/kernel" && scp -p -P 29418 [fan.shi@gerrit.ecarxgroup.com](mailto:fan.shi@gerrit.ecarxgroup.com):hooks/commit-msg "kernel/.git/hooks/" // 拉取分支
 git clone --recurse-submodules https://xxx/xxx
 
 

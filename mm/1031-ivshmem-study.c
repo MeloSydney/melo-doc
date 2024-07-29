@@ -122,7 +122,7 @@ probe(struct pci_dev *pdev, const struct pci_device_id *id)
 
 
 
-drivers/misc/ecarxdfs/cma_shmm_service.c
+drivers/misc/driver/cma_shmm_service.c
 
 cma_shmm_service_init(void)
 	ret = platform_device_register(&cma_shmm_device);
@@ -339,7 +339,7 @@ struct shm_block_info {
 
     bool remote_addr_sent;
     bool remote_sync_sent;
-    struct ecarxlink_scatter_data *scatter_data;
+    struct scatter_data *scatter_data;
     struct dma_chan *chan;
 };
 
@@ -397,9 +397,9 @@ shm_dev_mmap(struct file *filp, struct vm_area_struct *vma)
 //TODO - pci_dev.c
 
 struct cpvt_vm_pci_dev_config sos_pci_devs[CONFIG_MAX_PCI_DEV_NUM] = {
-	//dfsnotify
+	//chnlnotify
 	IVSHMEM_PVM_CONFIG(0, 0x00U, 0x1aU, 0x00U, IVSHMEM_FEATURE_FIX_USER),
-	//dfsivshmem
+	//chnlivshmem
 	IVSHMEM_PVM_CONFIG(1, 0x00U, 0x1aU, 0x01U, IVSHMEM_FEATURE_FIX_KERNEL),
 	//ivnotify
 	IVSHMEM_PVM_CONFIG(2, 0x00U, 0x1bU, 0x00U, IVSHMEM_FEATURE_FIX_USER),

@@ -39,7 +39,7 @@ bt -t 			/* 事发cpu的调用栈 */
 sym ffff8000109025f8 	/* 解析 符号地址 */
 dis dma_buffer_send 	/* 汇编 */
 dis -l dma_buffer_send+120 10    /* 汇编 偏移120 解析10行 */
-struct ecarxlink_scatter_data -o /* 解析 结构体 偏移 */
+struct scatter_data -o /* 解析 结构体 偏移 */
 rd ffff800012145138 32  /* 读取 32B */
 rd ffff800012145138 -e ffff800012145148  /* dump的start和end */
 p jeffies 		/* 打印变量 */

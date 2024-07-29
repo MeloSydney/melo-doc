@@ -7,9 +7,9 @@
 single_soc_shm_service_reserved:shm_cma {
 	compatible = "shared-dma-pool";
 	reusable;
-	size = <0x0 0x1B000000>; //432MB for dfs
+	size = <0x0 0x1B000000>; //432MB for chnl
 	alloc-ranges = <0xF 0x23000000 0x0 0x1B000000>;
-	linux,dfs-cma;
+	linux,chnl-cma;
 };
 
 /* cma_init_reserved_mem 解析dts 创建cma对象 放入cma_areas */
@@ -102,7 +102,7 @@ cma_find_by_name(const char *name)
 		return &cma_areas[i];
 
 
-/* dfs cma 管理器 */
+/* chnl cma 管理器 */
 cma_shmm_service_probe(struct platform_device *pdev)
 	init_status = cma_shmm_areas_init();
 		cma = cma_find_by_name(CMA_SHM_NAME);

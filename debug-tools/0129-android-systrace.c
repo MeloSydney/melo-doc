@@ -46,12 +46,12 @@ REM **systrace**.py  -o mytrace.html -t 5 -b 8024 gfx input view webview wm \
 
 mkdir "%folder%"
 
-adb shell **atrace** -c -b %buffersize% -a ecarx.launcher3 --async_start \
+adb shell **atrace** -c -b %buffersize% -a .launcher3 --async_start \
 	gfx input view webview wm am sm audio video camera hal res dalvik rs \
 	binder_driver power pm ss aidl sched freq idle disk sync
 REM timeout /T "%seconds%" /NOBREAK
 pause
-adb shell **atrace** -c -b %buffersize% -a ecarx.launcher3 --async_stop -z gfx input \
+adb shell **atrace** -c -b %buffersize% -a .launcher3 --async_stop -z gfx input \
 	view webview wm am sm audio video camera hal res dalvik rs binder_driver power \
 	pm ss aidl sched freq idle disk sync  > "%folder%"/atracedump.atrace
 
