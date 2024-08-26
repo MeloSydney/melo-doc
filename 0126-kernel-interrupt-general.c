@@ -16,9 +16,9 @@
 
 //TODO - kernel GIC
 
+SGI 0-15 软件产生中断 通过写GICD_SGIR寄存器来触发一个中断事件 [类似 X86 IPI中断]
 PPI 16-31 私有外设中断 [类似 x86上的LAPIC Timer Interrupt]
 SPI 32-1019 共享外设中断 [GICD_SETSPI_NSR设置中断，GICD_CLRSPI_NSR清除中断]
-SGI 0-15 软件产生中断 通过写GICD_SGIR寄存器来触发一个中断事件 [类似 X86 IPI中断]
 LPI 8192-xx locality-specific peripheral interrupt MSI/MSI-X
 IRI interrupt routing infrastructure
 ITS interrupt translation service 翻译message-base interrupt成LPI
@@ -32,4 +32,20 @@ TMR trigger mode register 中断触发方式
 
 
 
+//TODO - 中断 声明周期
+
+1 generate
+2 distribute
+3 deliver
+4 activate
+5 deactivate
+
+
+//TODO - gic 寄存器 分类
+
+gicc [cpu interface]
+gicd [distributor]
+gich [Hyp 访问]
+gicr [redistributor]
+gicv [virtual cpu interface]
 

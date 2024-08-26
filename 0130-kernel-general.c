@@ -162,6 +162,9 @@ disagrees about version of module_layout  ?
 3 从 work 拷贝 .config
 4 如果有新的 git commit 需要重新执行123
 
+//TODO - kernel 链接脚本
+
+https://blog.csdn.net/sinat_22338935/article/details/138086943
 
 //TODO - kernel # ## 井号 字符串 拼接
 

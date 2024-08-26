@@ -746,3 +746,18 @@ struct VirtQueue {
 
 
 
+
+//TODO - eventfd & irqfd
+
+
+eventfd
+
+1 允许 Qemu 通知 Host os
+2 Host os处理后续IO
+
+
+irqfd
+
+1 允许 Qemu 通知 Guest os
+2 Guest os 处理中断
+

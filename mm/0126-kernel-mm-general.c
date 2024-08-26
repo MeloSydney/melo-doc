@@ -234,3 +234,12 @@ MT_DEVICE_GRE
 Gathering (G): 允许内存访问合并。多次内存访问可以被合并，以提高性能。
 Reordering (R): 允许访问重排序。内存访问顺序可以被重新安排，以优化性能。
 Early Write Acknowledgement (E): 允许早期写确认。写操作可以在实际完成之前被认为已完成。
+
+
+//TODO - swiotlb
+
+低地址 <---> swiotlb映射表 <---> 高地址
+
+1 设备硬件决定 只能访问低地址
+2 cpu介入 将低地址数据拷贝到高地址空间
+3 系统访问高地址数据

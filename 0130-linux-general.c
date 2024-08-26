@@ -392,6 +392,24 @@ watch -n 5 tail /var/log/syslog
 ln –s  /var/www/test  ./test   /* 虚拟文件 ./test 真实文件 /var/www/test */
 
 
+setenv serverip 192.168.1.1;
+setenv ipaddr 192.168.1.171;
+setenv bootargs "earlycon=uart8250,mmio32,0x43b90000 rdinit=/sbin/init initrd=0x95300000 debug"
+setenv bootape ' \
+      	tftp 0x82000000         shifan/np-bringup/linux_vm_osx_lisheng_0802.dtb; \
+      	tftp 0x84000000         shifan/np-bringup/aspe.img; \
+      	tftp 0x8A000000         shifan/np-bringup/Image_0801; \
+        tftp 0x95300000         shifan/np-bringup/ramfs_0801.cpio; \
+        tftp 0x260000000        shifan/np-bringup/init.cpio.rtos; \
+        tftp 0x268000000        shifan/np-bringup/Image_rtos; \
+        tftp 0x26C000000        shifan/np-bringup/rtos_kernel_cpu6.dtb
+        tftp 0x210000000        shifan/np-bringup/osx_np.img; \
+        tftp 0x21F000000        shifan/np-bringup/j501_osx.dtb; \
+        tftp 0x220000000        shifan/np-bringup/Image_hostVM; \
+        bootm 0x84000000 - 0x82000000; boot'
+run bootape
+
+
 //TODO - linux scp
 
 scp -rp C:\Users\fan.shi\.ssh\id_rsa.pub shifan@10.43.201.145:/home/shifan
