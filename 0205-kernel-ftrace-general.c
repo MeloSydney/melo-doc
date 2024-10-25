@@ -19,37 +19,59 @@ CONFIG_TRACER_SNAPSHOT=y
 
 //TODO - ftrace 文件节点
 
-buffer_size_kb     /* percpu ringbuffer 大小 */
-buffer_total_size_kb /* 总共 ringbuffer 大小 */
-trace_options      /* 可以设置 输出格式 和过滤规则 */
-available_tracers  /* cat available_tracers   function_graph function sched_switch nop */
-current_tracer     /* echo function > current_tracer */
-	/* echo function_graph > current_tracer
-	   echo __do_fault > set_graph_function //跟踪__do_fault */
-set_ftrace_notrace /* 设置 不想追踪的函数 */
-	/* echo schedule > set_ftrace_notrace */
-tracing_on         /* ftrace 开关 */
-set_ftrace_pid     /* echo $PID > set_ftrace_pid */
-trace_marke        /* echo hello world > trace_marke */  /* userspace 通过这种方式 可以记录一条trace */
-		   /* https://lwn.net/Articles/366796/ trace_marke userspace 使用 demo */
-cat per_cpu/cpu0/trace  /* per_cpu */
+* 提示类
+available_tracers               /* cat available_tracers   function_graph function sched_switch nop */
+available_filter_functions      /* 支持的func */
+available_events                /* 支持event 列表 */
 events
-	enabled
-	filter  /* 过滤 */
-	format  /* 输出格式 */
-kprobe_events      /* krpobe 激活 */
-kprobe_profile     /* kprobe 输出 */
-max_graph_depth    /* 调用栈最大深度 func_graph 专用 */
-set_event          /* 特定事件触发时 打开 ftrace */
-set_event_pid      /* 追踪 pid */
-set_ftrace_filter  /* 白名单 */		/* CONFIG_DYNAMIC_FTRACE 动态ftrace */
-set_ftrace_notrace /* 黑名单 */		/* CONFIG_DYNAMIC_FTRACE 动态ftrace */
-set_graph_function /* func-trace 白名单 */	/* CONFIG_DYNAMIC_FTRACE 动态ftrace */
-trace_clock        /* https://zhuanlan.zhihu.com/p/611163404 */
+        enabled
+        filter                  /* 过滤 */
+        format                  /* 输出格式 */
+
+* 控制类
+** 通用
+tracing_on                      /* */
+tracing_cpumask                 /* cpu mask */
+tracing_max_latency             /* */
+tracing_thresh                  /* */
+current_tracer                  /* echo function > current_tracer */
+buffer_size_kb                  /* percpu ringbuffer 大小 */
+buffer_total_size_kb            /* total ringbuffer 大小 */
+trace_options                   /* 可以设置 输出格式 和过滤规则 */
 options
-	func_stack_trace  /* echo 1 > options/func_stack_trace 查看调用栈 function tracer 专用 */
-trace_maker        /* 支持 us 打印日志 */
-	/* https://www.cnblogs.com/Linux-tech/p/14110332.html */
+        func_stack_trace  /* echo 1 > options/func_stack_trace 查看调用栈 function tracer 专用 */
+set_event                       /* 特定事件触发时 打开 ftrace */
+set_event_pid                   /* 追踪 pid */
+
+** func
+function_profile_enabled        /* */
+set_ftrace_notrace              /* 设置 不想追踪的函数 echo schedule > set_ftrace_notrace*/
+set_ftrace_pid                  /* echo $PID > set_ftrace_pid */
+set_ftrace_filter               /* 追踪谁 ? */
+
+** graph
+max_graph_depth                 /* 调用栈最大深度 */
+set_graph_function              /* 需要显示谁的调用栈; depend on CONFIG_DYNAMIC_FTRACE;
+                                echo function_graph > current_tracer;
+                                echo __do_fault > set_graph_function */
+
+* 输出类
+printk_formats                  /* raw data */
+trace                           /* cat trace */
+trace_pipe                      /* cat trace_pipe */
+snapshot                        /* echo 0 清空释放 / 1 快照 / 2 清空 */
+trace_clock                     /* 时钟类型 local global counter https://zhuanlan.zhihu.com/p/611163404 */
+trace_stat                      /* percpu 的trace输出 */
+per_cpu/                        /* cat per_cpu/cpu0/trace */
+enabled_functions               /* */
+saved_cmdlines                  /* */
+saved_cmdlines_size             /* */
+trace_marker                     /* echo hello world > trace_marke
+                                https://lwn.net/Articles/366796/ trace_marke userspace 使用 demo */
+
+* 未分类
+kprobe_events                   /* krpobe 激活 */
+kprobe_profile                  /* kprobe 输出 */
 
 trace_printk("read foo %d out of bar %p\n", bar->foo, bar);
 

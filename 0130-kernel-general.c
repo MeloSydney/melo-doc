@@ -121,12 +121,27 @@ dts 别名 label
 //把内存单元对应page转成内核虚拟地址
 #define page_to_virt(page)  pfn_to_virt(page_to_pfn(page))
 
-//把内核态虚拟地址转成物理地址
+//线性映射
 #define __pa(x)         __virt_to_phys((unsigned long)(x))
 
-//把物理地址转成内核态虚拟地址
+//线性映射
 #define __va(x)         ((void *)__phys_to_virt((phys_addr_t)(x)))
 
+/* 虚拟地址转物理页号 */
+virt_to_pfn()
+
+/* 物理页号转虚拟地址 */
+pfn_to_virt()
+
+/* 物理地址转物理页号 */
+phys_to_pfn()
+__phys_to_pfn()
+PHYS_PFN()
+
+/* 物理页号转物理地址 */
+pfn_to_phys()
+__pfn_to_phys()
+PFN_PHYS()
 
 //TODO - kernel container_of
 
@@ -504,3 +519,29 @@ schedule()，进程调度，而schedule_timeout()进行调度之后，一定时�
 //TODO - kernel KSM Kernel Samepage Merging
 
 如果发现完全相同的内存页就会合并为单一内存页，并标志位写时复制COW(Copy On Write)
+
+
+
+//TODO - 火焰图
+
+/* 记录系统/进程的堆栈采样数据，默认perf.data */
+perf record -g –p
+
+/* 对record的调用栈等信息进行解析，默认perf.unflod */
+perf script，
+
+将perf.unflod导入PC机，使用火焰图工具出解析perf.svg。
+
+FlameGraph/stackcollapse-perf.pl perf.unflod FlameGraph/flamegraph.pl > perf.svg。
+
+使用chrome浏览器打开。
+
+
+
+//TODO - kernel lru
+
+LRU_INACTIVE_ANON：不活跃匿名页链表。
+LRU_ACTIVE_ANON：活跃匿名页链表。
+LRU_INACTIVE_FILE：不活跃文件页链表。
+LRU_ACTIVE_FILE：活跃文件页链表。
+LRU_UNEVICTABLE：不可回收页链表。

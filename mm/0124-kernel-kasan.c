@@ -76,3 +76,17 @@ ks 空间地址分配
 2 kasan 需要占用1/9 内存 用1Byte标记8Byte
 3 kasan 将内存分成 合法 / 非法 如果访问了其他合法地址 踩内存 并不能被检测
 
+
+//TODO - movsb
+
+movsb
+源地址 DS:SI
+目的地址 ES:DI
+DF=0 正向; DF=1 反向;
+SI和DI 加/减1;
+
+
+//TODO - lgdt lidt
+
+加载 gdt idt 地址
+

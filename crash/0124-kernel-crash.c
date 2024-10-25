@@ -20,12 +20,12 @@ runninglinuxkernel
 
 //TODO - kernel vmlinuz >> vmlinux
 
-extract-vmlinux  kernel源码工程下  或者 /usr/src
+extract-vmlinux
 
 
 //TODO - kernel hardlock
 
-hardlock，一种是**关中断时间过长**，超过了阈值，系统通过NMI发送来
+hardlock 一种是**关中断时间过长** 超过了阈值 系统通过NMI发送来
 
 crash> p watchdog_thresh   /* 查看watchdog最大容忍s */
 
@@ -79,6 +79,16 @@ page_fault_oops(struct pt_regs *regs, unsigned long error_code, unsigned long ad
 			pr_cont("PTE %lx", pte_val(*pte));
 	printk(KERN_DEFAULT "CR2: %016lx\n", address);
 
+
+//TODO - handle_pte_fault
+
+1. PTE表项无效 并且是文件页 调用do_fault()。
+2. PTE表项无效 并且是匿名页 调用do_anonymous_page()。
+3. PTE表项有效 但页不在内存 调用do_swap_page()。
+4. PTE表项有效 但页不可访问 调用do_numa_page()。
+5. PTE表项有效 但试图写一个不可写页 调用do_wp_page()
+
+
 //TODO - struct task_struct
 
 cur->pid 进程号
@@ -99,3 +109,26 @@ list rwsem_waiter.list -s rwsem_waiter.task,type -h 0xffff800061c57aa0
 rwsem_waiter.list 结构体和list成员
 -s 输出的成员信息
 -h 内嵌 list_head地址
+
+
+//TODO - crash file
+
+/* 1 获取 struct task */
+ccrash> ps
+PID    PPID    CPU        TASK           ST  %MEM  VSZ  RSS    COMM
+...
+177488 64302    1  ffff880436662ab0   RU   0.0  6280  568     ss
+
+
+/* 2 获取 dentry */
+crash> struct file.f_path ffff880436662ab0
+  f_path = {
+    mnt = 0xffff880432adbe80,
+    dentry = 0xffff880101cae5c0
+  }
+
+
+/* 3 获取 path */
+crash> files -d 0xffff880101cae5c0
+     DENTRY           INODE           SUPERBLK     TYPE      PATH
+ffff880101cae5c0 ffff880101c1d598 ffff88043a23e800 REG  /proc/slabinfo

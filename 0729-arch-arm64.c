@@ -13,23 +13,35 @@ x19 - x29       callee-saved
 x29             FP
 x30             LR
 x31             WZR
-状态寄存器 Status Registers
-PSTATE
-专用寄存器 Special-purpose Registers
-SP_ELx
+X0              存储方法返回值;
+X0～X7          方法参数小于8个时; 参数依次在这些寄存器中; 多了就存到栈上;
+X8              系统调用的调用号
+X9～X15         临时寄存器
+X16 X17         通常用作调试或调用目标地址保存寄存器; 在调用外部函数时可作为跳板寄存器;
+x18             平台寄存器; 它的使用与平台相关; 尽量不要使用;
+x19~x28         临时寄存器; 子程序使用时必须保存;
+X29             帧指针寄存器; 也称为 FP[Frame Pointer]; 在函数调用过程中保存当前栈帧的基址;
+X30             链接寄存器; 也称为 LR[Link Register]; 在调用函数时; 存储返回地址; 返回时; 直接从 X30 跳回调用点;
+SP              栈指针寄存器; 栈指针寄存器; 指向当前栈顶; 用于函数调用时分配局部变量或保存寄存器内容;
+ZR              零寄存器; 读取时返回 0; 写入时丢弃结果;
+
+PSTATE          状态寄存器 Status Registers
+
+SP_ELx          专用寄存器 Special-purpose Registers
 ELR_ELx
 SPSR_ELx
-系统寄存器 System Registers
-SCTLR_ELx
+
+SCTLR_ELx       系统寄存器 System Registers
 TTBR0_ELx
+
 /*
  * [Memory Attribute Indirection 寄存器]
- * 用于定义不同内存区域的属性，如缓存策略、访问权限等
+ * 用于定义不同内存区域的属性; 如缓存策略、访问权限等
  */
 MAIR_ELx
 
 /*
- * 转换控制寄存器，用于控制地址转换的行为和特性，如地址范围、页大小等
+ * 转换控制寄存器; 用于控制地址转换的行为和特性; 如地址范围、页大小等
  * https://blog.csdn.net/sinat_32960911/article/details/127856639
  * IPS[34:32] 输出物理地址宽度 [101 48bits,256T 100 52bits,4P]
  * TG1[31:30] 配置页大小[01 16k 10 4k 11 64k]
@@ -169,7 +181,7 @@ DFSC[5:0]
 
 DFSC 枚举
 
-0b000000	地址大小错误。L0页表或者页表地址基地址寄存器发生大小错误
+0b000000	地址大小错误; L0页表或者页表地址基地址寄存器发生大小错误
 0b000001	L1页表发生地址大小错误
 0b000010	L2页表发生地址大小错误
 0b000011	L3页表发生地址大小错误
@@ -353,19 +365,19 @@ PC
 
 //TODO - 异常处理流程
 
-1 PSTATE 保存到目标异常级别的SPSR_ELx中。
+1 PSTATE 保存到目标异常级别的SPSR_ELx中;
 
-2 返回地址 保存到目标异常级别的ELR_ELx中。
+2 返回地址 保存到目标异常级别的ELR_ELx中;
 
 3  PSTATE 寄存器里面的 DAIF 域都设置为1 关闭中断
 
-4 如果异常是同步异常或SError中断 异常的表征信息将保存在目标异常级别的ESR_ELx中。
+4 如果异常是同步异常或SError中断 异常的表征信息将保存在目标异常级别的ESR_ELx中;
 
-4 如果是指令止异常(Instruction Abort) 数据中止异常(Data Abort) PC对齐错误异常(PC alignment fault),故障的虚拟地址将保存在FAR_ELx中。
+4 如果是指令止异常(Instruction Abort) 数据中止异常(Data Abort) PC对齐错误异常(PC alignment fault),故障的虚拟地址将保存在FAR_ELx中;
 
-5 堆栈指针保存到目标异常级别的专用堆栈指针寄存器SP_ELx。
+5 堆栈指针保存到目标异常级别的专用堆栈指针寄存器SP_ELx;
 
-6 执行移至目标异常级别 并从异常向量定义的地址开始执行。
+6 执行移至目标异常级别 并从异常向量定义的地址开始执行;
 
 
 //TODO - 异常处理返回

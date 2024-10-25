@@ -22,13 +22,13 @@
 用于 copy_user_page 和 clear_user_page
 
 0xffff1000  0xffff7fff
-保留，任何平台都不能使用该段 虚拟内存空间
+保留 任何平台都不能使用该段 虚拟内存空间
 
 0xffff0000  0xffff0fff
 异常向量表 所在的内存区域
 
 0xffc00000  0xffefffff
-专用页面映射区(固定页面映射区)，使用 fix_to_vir()可以获取该区域的逻辑地址
+专用页面映射区(固定页面映射区) 使用 fix_to_vir()可以获取该区域的逻辑地址
 
 0xfee00000  0xfeffffff
 PCI技术的IO映射空间
@@ -37,10 +37,10 @@ VMALLOC_START  VMALLOC_END
 使用 vmlloac() 和 ioremap() 获取的地址都处于该内存段
 
 PAGE_OFFSET  high_memory-1
-内存直接映射区域(常规内存映射区域)，该段内存地址也称为 逻辑地址 ，可以用于 DMA寻址
+内存直接映射区域(常规内存映射区域) 该段内存地址也称为 逻辑地址  可以用于 DMA寻址
 
 PKMAP_BASE  PAGE_OFFSET-1
-持久映射区域，一般用于映射 高端内存
+持久映射区域 一般用于映射 高端内存
 
 
 
@@ -66,25 +66,34 @@ cat /proc/iomem
 https://mp.weixin.qq.com/s?__biz=Mzg2MzU3Mjc3Ng==&mid=2247488477&idx=1&sn=f8531b3220ea3a9ca2a0fdc2fd9dabc6&chksm=ce77d59af9005c8c2ef35c7e45f45cbfc527bfc4b99bbd02dbaaa964d174a4009897dd329a4d&scene=21&cur_album_id=2559805446807928833#wechat_redirect
 
 
-//TODO - kernel mm buddy GFP_*
+//TODO - kernel mm buddy __GFP_*
 
-/* 这两个标志会影响底层的伙伴系统从哪个区域中去获取空闲内存页 */
+/* 迁移类型 */
 __GFP_RECLAIMABLE      分配的页面是可以回收
 __GFP_MOVABLE          指定分配的页面是可以移动的
-__GFP_HIGH             内存分配请求是高优先级的  从紧急预留内存中分配
-__GFP_IO               内核在分配物理内存的时候可以发起磁盘 IO 操作 如果设置了该标志，表示允许内核将不常用的内存页置换出去
-__GFP_FS               允许内核执行底层文件系统操作
-__GFP_ZERO             将内存页初始化填充字节 0
-__GFP_DIRECT_RECLAIM   在进行内存分配的时候，可以进行直接内存回收
-__GFP_KSWAPD_RECLAIM   如果剩余内存容量在 _watermark[WMARK_MIN] 与 _watermark[WMARK_LOW] 之间时，内核就会唤醒 kswapd 进程开始异步内存回收
-__GFP_NOWARN           抑制内核的分配失败错误报告
-__GFP_RETRY_MAYFAIL    分配内存失败的时候，允许重试
+/* 管理区类型 */
+__GFP_DMA
+__GFP_DMA32
+__GFP_NORMAL
+__GFP_HIGHMEM
+/* 重试类型 */
+__GFP_RETRY_MAYFAIL    分配内存失败的时候 允许重试
 __GFP_NORETRY          分配内存失败时不允许重试
 __GFP_NOFAIL           一直重试直到成功为止
-__GFP_HARDWALL         只能在当前进程分配到的 CPU 所关联的 NUMA 节点上进行分配 当进程可以运行的 CPU 受限时，该标志才会有意义 绑核
-__GFP_THISNODE         内核分配内存的行为只能在当前 NUMA 节点或者在指定 NUMA 节点中分配内存
-__GFP_MEMALLOC         允许内核在分配内存时可以从所有内存区域中获取内存，包括从紧急预留内存中获取 快用快放
+/* 紧急类型 */
+__GFP_HIGH             内存分配请求是高优先级的  从紧急预留内存中分配
+__GFP_MEMALLOC         允许内核在分配内存时可以从所有内存区域中获取内存 包括从紧急预留内存中获取 快用快放
 __GFP_NOMEMALLOC       明确禁止内核从紧急预留内存中获取内存
+__GFP_ATOMIC
+/* 复合类型 */
+__GFP_IO               内核在分配物理内存的时候可以发起磁盘 IO 操作 如果设置了该标志 表示允许内核将不常用的内存页置换出去
+__GFP_FS               允许内核执行底层文件系统操作
+__GFP_ZERO             将内存页初始化填充字节 0
+__GFP_DIRECT_RECLAIM   在进行内存分配的时候 可以进行直接内存回收
+__GFP_KSWAPD_RECLAIM   如果剩余内存容量在 _watermark[WMARK_MIN] 与 _watermark[WMARK_LOW] 之间时 内核就会唤醒 kswapd 进程开始异步内存回收
+__GFP_NOWARN           抑制内核的分配失败错误报告
+__GFP_HARDWALL         只能在当前进程分配到的 CPU 所关联的 NUMA 节点上进行分配 当进程可以运行的 CPU 受限时 该标志才会有意义 绑核
+__GFP_THISNODE         内核分配内存的行为只能在当前 NUMA 节点或者在指定 NUMA 节点中分配内存
 
 
 enum {
@@ -182,8 +191,8 @@ Locked /* 防止swap out */
 //TODO - kernel task_struct
 
  struct task_struct {
-        // 内核线程的 active_mm 指向前一个进程的地址空间
-        // 普通进程的 active_mm 指向 null
+        // 内核线程的 active_mm = init_mm; mm = NULL;
+        // 普通进程的 active_mm = mm = 有意义的地址;
         struct mm_struct *active_mm;
 }
 
@@ -226,13 +235,13 @@ va -> pa 解析 包含:
 //TODO - mm 页表属性
 
 MT_DEVICE_nGnRnE
-Non-Gathering (nG): 禁止内存访问合并。每个内存访问都独立处理，不会合并多个访问请求。
-Non-Reordering (nR): 禁止访问顺序重排序。保持内存访问顺序，不会因为优化而改变顺序。
+Non-Gathering (nG): 禁止内存访问合并。每个内存访问都独立处理 不会合并多个访问请求。
+Non-Reordering (nR): 禁止访问顺序重排序。保持内存访问顺序 不会因为优化而改变顺序。
 No Early Write Acknowledgement (nE): 禁止早期写确认。写操作必须实际完成后才能被确认。
 
 MT_DEVICE_GRE
-Gathering (G): 允许内存访问合并。多次内存访问可以被合并，以提高性能。
-Reordering (R): 允许访问重排序。内存访问顺序可以被重新安排，以优化性能。
+Gathering (G): 允许内存访问合并。多次内存访问可以被合并 以提高性能。
+Reordering (R): 允许访问重排序。内存访问顺序可以被重新安排 以优化性能。
 Early Write Acknowledgement (E): 允许早期写确认。写操作可以在实际完成之前被认为已完成。
 
 
@@ -243,3 +252,10 @@ Early Write Acknowledgement (E): 允许早期写确认。写操作可以在实�
 1 设备硬件决定 只能访问低地址
 2 cpu介入 将低地址数据拷贝到高地址空间
 3 系统访问高地址数据
+
+
+//TODO - kernel kworker
+
+kworker/n:x             普通的per-cpu工作者线程        n表示CPU编号 x表示线程编号
+kworker/n:xH            高优先级的per-cpu工作者线程     n表示CPU编号 x表示线程编号
+kworker/u:x             非绑定的全局工作者线程          u表示非绑定 x表示线程编号。

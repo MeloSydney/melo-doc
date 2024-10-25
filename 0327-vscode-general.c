@@ -10,6 +10,8 @@ dracula official
 
 markdown all in one
 
+todo tree
+
 
 //TODO - indentation && display size
 
@@ -248,3 +250,18 @@ gcc             注释一行
 shift+v         多行模式
 gt              向后一个标签
 gT              向前一个标签
+
+
+
+//TODO - ansi color
+
+1 ansi color 插安装件
+2 Ctrl shift p
+3 ansi text: open preview
+
+
+
+
+//TODO - c/cpp 关闭语法检查
+
+errorSquiggles disable

@@ -47,6 +47,15 @@ git apply getuser.patch  // 打patch
 patch -p1 < .../my_patch
 
 
+/* 检查 patch 合理 */
+./scripts/checkpatch.pl <your patch>
+
+
+/* depth 只拉1个提交记录 */
+git clone --depth 1 https://github.com/torvalds/linux.git
+
+
+
 //TODO - git 乱码
 
 https://www.cnblogs.com/yanzige/p/9810333.html

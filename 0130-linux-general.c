@@ -3,11 +3,11 @@
 
 // TODO - linux 前后台 任务 切换 fg bg jobs
 
-jobs -l  /* 查看后台任务 */
-fg %{d}  /* 切换后台{d} 到前台 */
-ctrl-z   /* 暂停前台任务 */
-bg %{d}  /* 将后台{d} 切换到前台 */
-
+jobs -l                                 /* 查看后台任务 */
+fg %{d}                                 /* 切换后台{d} 到前台 */
+ctrl-z                                  /* 暂停前台任务 */
+bg %{d}                                 /* 将后台{d} 切换到前台 */
+strace -f -p 133 -o trace.txt &         /* 程序后台运行 */
 
 // TODO - linux 查看 bin 依赖 so ldd
 
@@ -568,4 +568,9 @@ objdump --debugging vmlinux > debugging.txt
 objdump -T Xorg|grep xf86   /* 查看xrog bin中 xf86开头的符号 */
 objdump -T /bin/zsh | grep -w zfree   /* 查看zfree符号 */
 aarch64-linux-gnu-objdump –s –x –d vmlinux > vmlinux.txt   /* arm64 -s 速度快 */
+
+
+//TODO - 0x7c00
+
+bios 定义的引导扇区加载的内存实模式地址
 
