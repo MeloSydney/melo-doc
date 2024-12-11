@@ -37,17 +37,34 @@ perf stat ./t1   /* 简单提供程序汇总计数 */
 
 perf record -e cpu-clock ./t1  /* e 具体event */
 perf report
-
+perf report --stdio
 
 //TODO - perf stat
 
 perf stat -e raw_syscalls:sys_enter ls / perf report
+perf stat -B dd if=/dev/zero of=/dev/null count=1000000
+	-B 千位数之间用逗号分隔符
+perf stat -e sched:sched_switch --filter 'prev_pid == 4794' -A -I 1000
+	pid 4794
+	event sched:sched_switch
+	-a all cpus
+	-I 1000 打印时间间隔1s
+perf stat -e cycles:u dd if=/dev/zero of=/dev/null count=100000
+	:u 只统计userspace
+perf stat -B -e cycles:u,instructions:u -a -C 0,3-4 sleep 5
+	-C 限制cpu
 
 /* 查看 ls 有执行多少个 syscall sys_enter */
 
 //TODO - perf probe
 
 perf probe schedule:12 cpu
+
+/* 监听 tcp_sendmsg 内核函数 */
+perf probe --add tcp_sendmsg
+perf record -e probe:tcp_sendmsg -ag -- sleep 5
+perf probe --del tcp_sendmsg
+perf report
 
 /* 在schedule()+12 插入一个动态tp */
 
