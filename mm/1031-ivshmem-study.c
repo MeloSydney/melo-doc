@@ -318,7 +318,7 @@ kvshmem_get_handle(char *name)
 	}
 
 
-//TODO - e04 cp shm_dev.c mem
+//TODO - cp shm_dev.c mem
 
 1. shm_dev.c 没有使用 dmabuf 建议改造
 2. shm_dev.c shm_block_info 数据结构不再适用
@@ -370,7 +370,7 @@ shm_dev_rpmsg_endpoint_callback(struct rpmsg_device *rpdev, void *data, int len,
 	}
 
 
-//TODO - e04 cp shm_dev.c mmap
+//TODO - cp shm_dev.c mmap
 
 static const struct file_operations shm_dev_fops =
 {

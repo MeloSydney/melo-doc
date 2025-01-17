@@ -234,8 +234,8 @@ destnation: /home/ffjerry/work/melo/01.ubuntu.game/0624-gamescreen/game_screen/D
     v  verbose
     avzP  强总
 
-rsync -a --delete ./empty/ ./wanna-delete/  /* 删除空文件夹 */
-rsync -a --delete ./blank/ ./src-E045/      /* 删除大文件 */
+rsync -a --delete ./empty/ ./wanna-delete/      /* 删除空文件夹 */
+rsync -a --delete ./blank/ ./src-linux/         /* 删除大文件 */
 
 
 //TODO - linux 更快删除
@@ -524,9 +524,9 @@ https:/\/discourse.ubuntu.com/t/how-to-compile-kernel-in-ubuntu-20-04/20268 /* �
 //TODO - linux kernel atf
 
 BL1  BootRom固化
-BL2  初始化 DDR/UFS 等，并将 E04 每一个 core 的 IMAGE 镜像加载到 DDR 指定的地址并运行
-BL31 初始化 DDR/UFS 等，并将 E04 每一个 core 的 IMAGE 镜像加载到 DDR 指定的地址并运行
-BL32 安全 OS，负责运行 TEE 系统，E04 平台使用的 TEE 是 android_trusty_tee
+BL2  初始化 DDR/UFS 等，并将 每一个 core 的 IMAGE 镜像加载到 DDR 指定的地址并运行
+BL31 初始化 DDR/UFS 等，并将 每一个 core 的 IMAGE 镜像加载到 DDR 指定的地址并运行
+BL32 安全 OS，负责运行 TEE 系统 平台使用的 TEE 是 android_trusty_tee
 BL33 uboot
 
 

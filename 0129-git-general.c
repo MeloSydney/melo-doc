@@ -9,7 +9,7 @@ git clone --recurse-submodules https://xxx/xxx
 git branch -a  // 查看所有分支
 git branch -r // 查看远端分支
 git branch --set-upstream-to origin/远程分支名  本地分支名 // 追踪分支
-git branch --set-upstream-to=origin/<branch> e05_xen_v2000_project_dev
+git branch --set-upstream-to=origin/<branch> xen_v2000_project_dev
 
 git checkout -b 本地分支名 origin/远程分支名  // 本地创建分支 并追踪远程分支
 
