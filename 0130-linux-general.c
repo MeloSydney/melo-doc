@@ -562,11 +562,11 @@ strace -f -p pid   查看pid的系统调用
 
 //TODO - linux objdump
 
-objdump -D app  /* 带有c语言的反汇编 但是很慢 */
-objdump -S -l -z vmlinux > vmlinux.txt
+objdump -D app                                  /* -D 全部反汇编 */
+objdump -S -l -z vmlinux > vmlinux.txt          /* -S 附带源码信息 */
 objdump --debugging vmlinux > debugging.txt
-objdump -T Xorg|grep xf86   /* 查看xrog bin中 xf86开头的符号 */
-objdump -T /bin/zsh | grep -w zfree   /* 查看zfree符号 */
+objdump -T Xorg|grep xf86                       /* 查看xrog bin中 xf86开头的符号 */
+objdump -T /bin/zsh | grep -w zfree             /* 查看zfree符号 */
 aarch64-linux-gnu-objdump –s –x –d vmlinux > vmlinux.txt   /* arm64 -s 速度快 */
 
 
