@@ -7,23 +7,23 @@ https://zhuanlan.zhihu.com/p/578252899
 //TODO - 寄存器 分类
 
 通用寄存器 General-purpose Registers
-x0 - x28        常规数据操作寄存器
-x8 - x18        caller-saved
-x19 - x29       callee-saved
-x29             FP
-x30             LR
-x31             WZR
-X0              存储方法返回值;
-X0～X7          方法参数小于8个时; 参数依次在这些寄存器中; 多了就存到栈上;
-X8              系统调用的调用号
-X9～X15         临时寄存器
-X16 X17         通常用作调试或调用目标地址保存寄存器; 在调用外部函数时可作为跳板寄存器;
-x18             平台寄存器; 它的使用与平台相关; 尽量不要使用;
-x19~x28         临时寄存器; 子程序使用时必须保存;
-X29             帧指针寄存器; 也称为 FP[Frame Pointer]; 在函数调用过程中保存当前栈帧的基址;
-X30             链接寄存器; 也称为 LR[Link Register]; 在调用函数时; 存储返回地址; 返回时; 直接从 X30 跳回调用点;
-SP              栈指针寄存器; 栈指针寄存器; 指向当前栈顶; 用于函数调用时分配局部变量或保存寄存器内容;
-ZR              零寄存器; 读取时返回 0; 写入时丢弃结果;
+x0 - x28	常规数据操作寄存器
+x8 - x18	caller-saved
+x19 - x29	callee-saved
+x29		FP
+x30		LR
+x31		WZR
+X0		存储方法返回值;
+X0～X7		方法参数小于8个时; 参数依次在这些寄存器中; 多了就存到栈上;
+X8		系统调用的调用号
+X9～X15		临时寄存器
+X16 X17		通常用作调试或调用目标地址保存寄存器; 在调用外部函数时可作为跳板寄存器;
+x18		平台寄存器; 它的使用与平台相关; 尽量不要使用;
+x19~x28		临时寄存器; 子程序使用时必须保存;
+X29		帧指针寄存器; 也称为 FP[Frame Pointer]; 在函数调用过程中保存当前栈帧的基址;
+X30		链接寄存器; 也称为 LR[Link Register]; 在调用函数时; 存储返回地址; 返回时; 直接从 X30 跳回调用点;
+SP		特殊寄存器 [SP + 栈使用的空间 = FP]
+ZR		零寄存器; 读取时返回 0; 写入时丢弃结果;
 
 PSTATE          状态寄存器 Status Registers
 
@@ -53,12 +53,31 @@ TCR_ELx
  * thread identifying information 存储区域
  * 例如 保存 cpuid domid
  */
-tpidr_elx
+TPIDR_EL0
+TPIDR_EL1
+TPIDR_EL2
+TPIDR_EL3
+
+/*
+ * EL0 Read-Only Software Thread ID Register
+ */
+TPIDRRO_EL0
 
 /*
  * [VM id 保存] 用来区分不同的VM
  */
 vmpidr_elx
+
+/* mpidr 格式 */
+31       30        24 23        16 15         8 7          0
++---------+----------+------------+------------+-------------+
+| U       | Aff3     | Aff2       | Aff1       | Aff0        |
++---------+----------+------------+------------+-------------+
+
+/*
+ * Multiprocessor Affinity Register [CPU物理ID]
+ */
+MPIDR_EL1
 
 /*
  * [Physical Address 寄存器] 应该是 输出stage-1的地址 ipa
@@ -115,8 +134,15 @@ CPACR_EL1
  */
 CSSELR_EL1
 
+/*
+ * [Thread ID]
+ */
+TPIDRRO_EL0
 
-
+/*
+ * [Auxiliary Control 用途未知]
+ */
+ACTLR_EL1
 
 /*
  * 保存 PSTATE
@@ -124,9 +150,50 @@ CSSELR_EL1
  * NZCV[31:28] [负数] [零标志] [进位] [溢出]
  * DAIF[9:6] [断点中断掩码] [Serror掩码] [IRQ掩码] [FIQ掩码]
  * M[4] 运行模式 [0 = aarch64]
- * M[3:0] 异常等级
+ * M[3:2] 异常等级 0b00 = EL0; 0b01 = EL1; 0b10 = EL2; 0b11 = reserved;
+ * M[1] 栈指针选择 1 = 选择SP_EL0公共栈; 0 = 选择SP_ELx异常等级专用栈
+ * M[0] 目标执行状态 0 = AArch64; 1 = AArch32
  */
-SPSR
+SPSR_ELx
+
+/*
+ * [Counter-timer Kernel Control Register 控制Timer访问权限]
+ */
+CNTKCTL_EL1
+
+/*
+ * [Virtual Timer控制寄存器]
+ */
+CNTV_CTL_EL0
+
+/*
+ * [存放Virtual Timer的相对值]
+ */
+CNTV_CVAL_EL0
+
+
+/*
+ * [保存EL1 virtual timer的值]
+ */
+CNTV_TVAL_EL1
+
+
+/*
+ * [保存EL1 physical timer的值]
+ */
+CNTP_TVAL_EL0
+
+
+/*
+ * [保存EL1 physical timer]
+ */
+CNTP_CVAL_EL0
+
+
+/*
+ * [EL1 physical timer控制寄存器]
+ */
+CNTP_CTL_EL0
 
 /*
  * eret 返回地址
@@ -135,12 +202,28 @@ SPSR
 ELR_ELx
 
 /*
- * stack pointer
+ * Stack Pointer
  * SP_EL0, SP_EL1, SP_EL2, SP_EL3
  */
 SP_ELx
 
 /*
+ * Floating-point Control Register
+ */
+FPCR
+
+/*
+ * Floating-point Status Register
+ */
+FPSR
+
+/*
+ * Floating-Point Exception Control Register
+ */
+FPEXC32_EL2
+
+/*
+ * Exception Syndrome Register
  * 保存发生异常时的特征 比如异常分类 ESR_ELx.EC 异常具体原因 ESR_ELx.ISS 访问的字节数 目标寄存器 load还是store
  * https://blog.csdn.net/sinat_32960911/article/details/127856639
  * ISS2[36:32]
@@ -211,9 +294,11 @@ DFSC 枚举
 
 
 /*
+ * Fault Address Register
  * stage-1阶段 保存同步异常的地址 这个地址只有OS能解析 对应 TTBRn_EL1
  */
 FAR_ELn
+
 /*
  * [Virtualization Translation Control 寄存器]
  * VS[19] [vmid bit位数 0 8bit 1 16bit]
@@ -221,10 +306,47 @@ FAR_ELn
  * TG0[15:14] [VTTBR_EL2的粒度 00 4k 01 64k 10 16k]
  */
 VTCR_EL2
+
 /*
+ * Hypervisor IPA Fault Address Register
  * 经过stage-2阶段转换后 发生#PF的地址 保存#PF的IPA hyp保存了IPA的映射 例如 [设备虚拟化mmio rw异常上报]
  */
 HPFAR_EL2
+
+
+/*
+ * Counter-timer Virtual Offset Register [Holds the 64-bit virtual offset]
+ */
+CNTVOFF_EL2
+
+
+/*
+ * Domain Access Control Register
+ */
+DACR32_EL2
+
+
+/*
+ * Instruction Fault Status Register
+ */
+IFSR32_EL
+
+
+/*
+ * Auxiliary Fault Status Register
+ */
+AFSR0_EL1
+AFSR0_EL2
+AFSR0_EL3
+AFSR1_EL1
+AFSR1_EL2
+AFSR1_EL3
+
+/*
+ * Context ID Register [当前Process ID]
+ */
+CONTEXTIDR_EL1
+CONTEXTIDR_EL2
 
 /*
  * [Vector Base Address 寄存器] 异常向量表
@@ -245,7 +367,12 @@ ctr_elx
  * Base ADDR[47:1]
  * CnP[0]
  */
-TTBRn_EL1
+TTBR0_EL1
+TTBR0_EL2
+TTBR0_EL3
+TTBR1_EL1
+TTBR1_EL2
+
 /*
  * 将IPA转换成PA stage-2 转换使用
  * VMID[63:48]
@@ -271,7 +398,7 @@ ICH_LRn_EL2
  * I[12] 指令cache enable
  * C[2] data cache enable
  * A[1] 对齐检查
- * M[0] MMU enable
+ * M[0] MMU enable for stage-1
  */
 SCTLR_EL2
 
@@ -294,9 +421,25 @@ HCR_EL2
 cnthctl_el2
 
 /*
- * [Hyp控制寄存器]
+ * [Count Timer Physical 寄存器]
  */
-hcr_el2
+CNTHP_CVAL_EL2
+
+/*
+ * [Count Timer Physical 寄存器]
+ */
+CNTHP_CTL_EL2
+
+
+/*
+ * [AArch64 Memory Model Feature Register 提供基础内存信息]
+ * TGran4_2[43:40]	4k粒度 for stage-2
+ * TGran4[31:28]	4k粒度 for stage-1
+ * BigEnd[11:8]		大小端
+ * ASID[7:4]		0b0000: 8 bits.
+ * PARange[3:0]		物理地址范围	[0b0100 44 bits, 16TB]
+ */
+id_aa64mmfr0_el1
 
 /*
  * [虚拟化ProcessorID 寄存器] 和 midr_el1 一致
@@ -363,7 +506,7 @@ XZR
 PC
 
 
-//TODO - 异常处理流程
+// TODO - [异常处理流程]
 
 1 PSTATE 保存到目标异常级别的SPSR_ELx中;
 
@@ -380,8 +523,63 @@ PC
 6 执行移至目标异常级别 并从异常向量定义的地址开始执行;
 
 
-//TODO - 异常处理返回
+// TODO - [异常处理返回]
 
 1 从 ELR_ELx 寄存器中恢复 PC 指针
 
-2  从 SPSR_ELx 寄存器恢复 PSTATE 处理器的状态
+2 恢复PSTATE
+
+// TODO - [linux kernel 异常向量表]
+
+
+/*
+ * el 入参
+ * ht 入参
+ * regsize 入参
+ * label 入参
+ */
+.macro kernel_ventry, el:req, ht:req, regsize:req, label:req
+	.align 7
+	sub	sp, sp, #PT_REGS_SIZE
+	b	el\el\ht\()_\regsize\()_\label
+
+
+SYM_CODE_START(vectors)
+	kernel_ventry	1, t, 64, sync		// Synchronous EL1t		el1t_64_sync_handler
+	kernel_ventry	1, t, 64, irq		// IRQ EL1t
+	kernel_ventry	1, t, 64, fiq		// FIQ EL1t
+	kernel_ventry	1, t, 64, error		// Error EL1t
+
+	kernel_ventry	1, h, 64, sync		// Synchronous EL1h		el1h_64_sync_handler
+	kernel_ventry	1, h, 64, irq		// IRQ EL1h
+	kernel_ventry	1, h, 64, fiq		// FIQ EL1h
+	kernel_ventry	1, h, 64, error		// Error EL1h
+
+	kernel_ventry	0, t, 64, sync		// Synchronous 64-bit EL0	el0t_64_sync_handler
+	kernel_ventry	0, t, 64, irq		// IRQ 64-bit EL0
+	kernel_ventry	0, t, 64, fiq		// FIQ 64-bit EL0
+	kernel_ventry	0, t, 64, error		// Error 64-bit EL0
+
+	kernel_ventry	0, t, 32, sync		// Synchronous 32-bit EL0	el0t_32_sync_handler
+	kernel_ventry	0, t, 32, irq		// IRQ 32-bit EL0
+	kernel_ventry	0, t, 32, fiq		// FIQ 32-bit EL0
+	kernel_ventry	0, t, 32, error		// Error 32-bit EL0
+SYM_CODE_END(vectors)
+
+
+// TODO - [AArch64 AAPCS]
+
+[Arch ARM Procedure Call Standard]
+
+x31	SP	堆栈指针寄存器，函数调用栈栈顶，低地址
+x30	LR	链接寄存器，函数返回地址
+x29	FP	栈帧寄存器，函数调用栈栈底，高地址
+x19…x28		Callee-saved registers
+x18		The Platform Register, if needed; otherwise a temporary register.
+x17	IP1	\
+x16	IP0	\
+x9…x15		Caller-saved temporary registers
+x8		Indirect result location register
+x0…x7		Parameter/result registers
+
+

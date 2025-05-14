@@ -17,7 +17,6 @@
 
 //TODO - linux memory 内存布局
 
-
 0xffff8000  0xffffffff
 用于 copy_user_page 和 clear_user_page
 
@@ -42,6 +41,37 @@ PAGE_OFFSET  high_memory-1
 PKMAP_BASE  PAGE_OFFSET-1
 持久映射区域 一般用于映射 高端内存
 
+// TODO - [linux memory ks虚拟地址布局 32bits]
+
+* 临时映射	[?, 0xFFFF_FFFF]
+
+* 固定映射	[FIXADDR_START, FIXADDR_END]
+
+* 永久映射	[PKMAP_BASE, FIXADDR_START]
+
+* vmalloc	[VMALLOC_START, VMALLOC_END]
+
+* normal	[3G+16M, 3G+892M]
+
+* dma映射	[0xC00_0000+TASK_SIZE, 3G+16M]
+
+* 用户态	[0, 3G]
+
+// TODO - [linux memory us虚拟地址布局 32bits]
+
+* .stack
+
+* .mmap
+
+* .heap
+
+* .bss
+
+* .data
+
+* .text
+
+* .reserved
 
 
 //TODO - linux mmap
@@ -69,31 +99,32 @@ https://mp.weixin.qq.com/s?__biz=Mzg2MzU3Mjc3Ng==&mid=2247488477&idx=1&sn=f8531b
 //TODO - kernel mm buddy __GFP_*
 
 /* 迁移类型 */
-__GFP_RECLAIMABLE      分配的页面是可以回收
-__GFP_MOVABLE          指定分配的页面是可以移动的
+___GFP_RECLAIMABLE	分配的页面是可以回收
+___GFP_MOVABLE		指定分配的页面是可以移动的
 /* 管理区类型 */
-__GFP_DMA
-__GFP_DMA32
+__GFP_DMA		16bits
+__GFP_DMA32		32bits
 __GFP_NORMAL
 __GFP_HIGHMEM
 /* 重试类型 */
-__GFP_RETRY_MAYFAIL    分配内存失败的时候 允许重试
-__GFP_NORETRY          分配内存失败时不允许重试
-__GFP_NOFAIL           一直重试直到成功为止
+___GFP_RETRY_MAYFAIL	允许重试
+__GFP_NORETRY		不允许重试
+___GFP_NOFAIL 		直到成功
 /* 紧急类型 */
-__GFP_HIGH             内存分配请求是高优先级的  从紧急预留内存中分配
-__GFP_MEMALLOC         允许内核在分配内存时可以从所有内存区域中获取内存 包括从紧急预留内存中获取 快用快放
-__GFP_NOMEMALLOC       明确禁止内核从紧急预留内存中获取内存
-__GFP_ATOMIC
+___GFP_HIGH		内存分配请求是高优先级的  从紧急预留内存中分配
+___GFP_MEMALLOC		允许内核在分配内存时可以从所有内存区域中获取内存 包括从紧急预留内存中获取 快用快放
+___GFP_NOMEMALLOC 	禁止 从紧急预留内存中获取内存
+___GFP_ATOMIC		不允许睡眠
 /* 复合类型 */
-__GFP_IO               内核在分配物理内存的时候可以发起磁盘 IO 操作 如果设置了该标志 表示允许内核将不常用的内存页置换出去
-__GFP_FS               允许内核执行底层文件系统操作
-__GFP_ZERO             将内存页初始化填充字节 0
-__GFP_DIRECT_RECLAIM   在进行内存分配的时候 可以进行直接内存回收
-__GFP_KSWAPD_RECLAIM   如果剩余内存容量在 _watermark[WMARK_MIN] 与 _watermark[WMARK_LOW] 之间时 内核就会唤醒 kswapd 进程开始异步内存回收
-__GFP_NOWARN           抑制内核的分配失败错误报告
-__GFP_HARDWALL         只能在当前进程分配到的 CPU 所关联的 NUMA 节点上进行分配 当进程可以运行的 CPU 受限时 该标志才会有意义 绑核
-__GFP_THISNODE         内核分配内存的行为只能在当前 NUMA 节点或者在指定 NUMA 节点中分配内存
+___GFP_IO		分配时允许swap
+___GFP_FS		允许内核执行底层文件系统操作
+___GFP_ZERO		/* */
+___GFP_DIRECT_RECLAIM	分配时 运行直接回收
+___GFP_KSWAPD_RECLAIM	如果剩余内存容量在 _watermark[WMARK_MIN] 与 _watermark[WMARK_LOW] 之间时 内核就会唤醒 kswapd 进程开始异步内存回收
+___GFP_NOWARN		分配失败时 抑制内核的错误报告
+___GFP_HARDWALL 	当前numa分配
+___GFP_THISNODE		NUMA 节点或者在指定 NUMA 节点中分配内存
+
 
 
 enum {
@@ -191,29 +222,29 @@ Locked /* 防止swap out */
 //TODO - kernel task_struct
 
  struct task_struct {
-        // 内核线程的 active_mm = init_mm; mm = NULL;
-        // 普通进程的 active_mm = mm = 有意义的地址;
-        struct mm_struct *active_mm;
+	// 内核线程的 active_mm = init_mm; mm = NULL;
+	// 普通进程的 active_mm = mm = 有意义的地址;
+	struct mm_struct *active_mm;
 }
 
 struct mm_struct {
-        struct vm_area_struct *mmap;        /* list of VMAs */
-        struct rb_root mm_rb;               /* all vma */
-        pgd_t * pgd;
-        int map_count;                      /* count of vma */
+	struct vm_area_struct *mmap;        /* list of VMAs */
+	struct rb_root mm_rb;               /* all vma */
+	pgd_t * pgd;
+	int map_count;                      /* count of vma */
 }
 
 struct vm_area_struct {
-        unsigned long vm_start;         /* addr */
-        unsigned long vm_end;           /* addr + len */
-        struct mm_struct *vm_mm;
-        pgprot_t vm_page_prot;
-        struct vm_area_struct *vm_next, *vm_prev;   /* vma 在 mm_struct->mmap 双向链表中的前驱节点和后继节点 */
-        struct rb_node vm_rb;                       /* vma 在 mm_struct->mm_rb 红黑树中的节点 */
+	unsigned long vm_start;         /* addr */
+	unsigned long vm_end;           /* addr + len */
+	struct mm_struct *vm_mm;
+	pgprot_t vm_page_prot;
+	struct vm_area_struct *vm_next, *vm_prev;   /* vma 在 mm_struct->mmap 双向链表中的前驱节点和后继节点 */
+	struct rb_node vm_rb;                       /* vma 在 mm_struct->mm_rb 红黑树中的节点 */
 }
 
 
-//TODO - mm 物理内存 概念
+//TODO - [mm 物理内存 概念]
 
 wafer           /* 晶圆 */
 die             /* 晶圆上 切割的一个 小方块 */
@@ -224,25 +255,32 @@ bank
 row
 column
 va -> pa 解析 包含:
-        channel id
-        rank id         /* 正方体 */
-        bank id         /* 正方体的一个切面 */
-        row  id
-        column id
+	channel id
+	rank id         /* 正方体 */
+	bank id         /* 正方体的一个切面 */
+	row  id
+	column id
 
 
 
-//TODO - mm 页表属性
+//TODO - [mm 页表属性 For 设备内存]
 
 MT_DEVICE_nGnRnE
-Non-Gathering (nG): 禁止内存访问合并。每个内存访问都独立处理 不会合并多个访问请求。
-Non-Reordering (nR): 禁止访问顺序重排序。保持内存访问顺序 不会因为优化而改变顺序。
-No Early Write Acknowledgement (nE): 禁止早期写确认。写操作必须实际完成后才能被确认。
+Non-Gathering (nG): 不支持写合并
+Non-Reordering (nR): 禁止访问顺序重排
+No Early Write Acknowledgement (nE): 同步写操作
 
 MT_DEVICE_GRE
-Gathering (G): 允许内存访问合并。多次内存访问可以被合并 以提高性能。
-Reordering (R): 允许访问重排序。内存访问顺序可以被重新安排 以优化性能。
-Early Write Acknowledgement (E): 允许早期写确认。写操作可以在实际完成之前被认为已完成。
+Gathering (G): 允许内存访问合并
+Reordering (R): 允许访问重排序
+Early Write Acknowledgement (E): 写操作可以在实际完成之前被认为已完成
+
+// TODO - [mm 页表属性 For Normal内存]
+
+Cacheable(可缓存)
+Non-cacheable(不可缓存)
+Write-Back(回写)
+Write-Through(写通)
 
 
 //TODO - swiotlb

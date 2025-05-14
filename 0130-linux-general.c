@@ -25,7 +25,7 @@ sudo vi /etc/sudoers
 
 ssh-copy-id -i ~/.ssh/id_rsa.pub shifan@10.43.48.240
 /* windows下 将windows公钥拷贝到对端Linux服务器 */
-type $env:USERPROFILE\.ssh\id_rsa.pub | ssh fan.shi@10.43.57.95 "cat >> .ssh/authorized_keys"
+type C:\Users\melo\.ssh\id_rsa.pub | ssh sf443845@30.178.38.61 "cat >> .ssh/authorized_keys"
 
 A需要免密登录B 就要将A的公钥告知B
 

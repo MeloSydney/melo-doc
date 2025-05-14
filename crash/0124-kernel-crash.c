@@ -23,13 +23,38 @@ runninglinuxkernel
 extract-vmlinux
 
 
-//TODO - kernel hardlock
+//TODO - [kernel Hard Lockup]
 
-hardlock 一种是**关中断时间过长** 超过了阈值 系统通过NMI发送来
+Hard Lockup
+	长时间关闭cpu中断
+
 
 crash> p watchdog_thresh   /* 查看watchdog最大容忍s */
 
 watchdog_thresh = $1 = 60  /* 默认10s */
+
+// TODO - [kernel Soft Lockup]
+
+原因
+	长时间占有cpu 关闭抢占
+
+
+watchdog_timer_fn(struct hrtimer *hrtimer)
+	unsigned long touch_ts = __this_cpu_read(watchdog_touch_ts);
+	duration = is_softlockup(touch_ts);
+		if (time_after(now, touch_ts + get_softlockup_thresh()))
+			return now - touch_ts;
+	/* Soft Lockup 发生了! */
+	if (unlikely(duration))
+
+
+static int get_softlockup_thresh(void)
+	return watchdog_thresh * 2;
+
+_setup("watchdog_thresh=", watchdog_thresh_setup);
+
+static int __init watchdog_thresh_setup(char *str)
+	get_option(&str, &watchdog_thresh);
 
 
 //TODO - crash vmcore vmlinux

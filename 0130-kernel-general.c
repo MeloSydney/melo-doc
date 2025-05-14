@@ -16,7 +16,7 @@ echo -n '+p' > /sys/kernel/debug/dynamic_debug/control
 
 
 
-//TODO - kernel dts interrupts
+// TODO - [kernel Dts delete-property]
 
 删除node/property
 
@@ -48,11 +48,12 @@ echo -n '+p' > /sys/kernel/debug/dynamic_debug/control
 	/delete-property/ property2;
 };
 
+// TODO - [kernel Dts Interrupts]
 
 ranges:
-ranges = <0 0x802000 0x1000>;            /* 0 base len */
-ranges = <local地址, parent地址, size>  // 表示将local地址向parent地址的转换
-reg = <0x00001 0x01 0x000010 0x02>; // 起始地址为0x0001 大小为0x01 起始地址为0x000010 大小为0x02
+	ranges = <0 0x802000 0x1000>;			/* 0 base len */
+	ranges = <local地址, parent地址, size>;		/* 表示将local地址向parent地址的转换 */
+	reg = <0x00001 0x01 0x000010 0x02>;		/* 起始地址为0x0001 大小为0x01 起始地址为0x000010 大小为0x02 */
 
 interrupts = <0 2 4>;
 0 中断来源
@@ -85,7 +86,7 @@ static int demo_range_probe(struct platform_device *pdev)
 [  382.950805] range12 start: 0x3002000, end: 0x3003000
 
 
-//TODO - kernel dts 语法 lable
+// TODO - [kernel Dts Lable]
 
 dts 别名 label
 [label:] node-name[@unit-address] {
@@ -95,7 +96,7 @@ dts 别名 label
 
 
 
-//TODO - kernel mm 地址转换 API
+//TODO - [kernel mm API 地址转换]
 
 //把内核态虚拟地址转成物理地址
 #define __virt_to_phys(x)   (((phys_addr_t)(x) - PAGE_OFFSET + PHYS_OFFSET))
@@ -143,7 +144,7 @@ pfn_to_phys()
 __pfn_to_phys()
 PFN_PHYS()
 
-//TODO - kernel container_of
+// TODO - [kernel API container_of]
 
 container_of(obj, struct drm_gem_shmem_object, base)
 a# 成员指针地址
@@ -151,7 +152,7 @@ b# 包含a#的结构体
 c# a#在b#中的成员名
 
 
-//TODO - kernel commandline
+// TODO - [kernel commandline]
 
 BOOT_IMAGE=/boot/vmlinuz-5.13.0-51-generic
 	root=UUID=a407f6af-3baf-432f-b973-17e600ca8128
@@ -166,8 +167,21 @@ BOOT_IMAGE=/boot/vmlinuz-5.13.0-51-generic
 	vt.handoff=7
 	nomodeset              /* 告诉内核在系统启动并运行之前不启动视频驱动程序 */
 
+// TODO - [kernel mem_map]
 
-//TODO - linux ko disagrees about version of symbols
+alloc_node_mem_map(struct pglist_data *pgdat)
+	start = pgdat->node_start_pfn & ~(MAX_ORDER_NR_PAGES - 1);
+	end = pgdat->node_start_pfn + pgdat->node_spanned_pages;
+	end = ALIGN(end, MAX_ORDER_NR_PAGES);
+	size =  (end - start) * sizeof(struct page);
+	map = alloc_remap(pgdat->node_id, size);
+	pgdat->node_mem_map = map + (pgdat->node_start_pfn - start);
+
+1 uma架构下 全部struct page被全局mem_map[]管理
+
+2 numa架构下 当前node的struct page被当前node的node_mem_map[]管理
+
+// TODO - [linux KO disagrees about version of symbols]
 
 disagrees about version of symbols get_chnl_exporter  /* 和最后提交hash相关 */
 disagrees about version of module_layout  ?
@@ -177,11 +191,11 @@ disagrees about version of module_layout  ?
 3 从 work 拷贝 .config
 4 如果有新的 git commit 需要重新执行123
 
-//TODO - kernel 链接脚本
+// TODO - [kernel Lds 链接脚本]
 
 https://blog.csdn.net/sinat_22338935/article/details/138086943
 
-//TODO - kernel # ## 井号 字符串 拼接
+// TODO - kernel # ## 井号 字符串 拼接
 
 #define DRM_IOCTL_DEF_DRV(ioctl, _func, _flags)        \
 	[DRM_IOCTL_NR(DRM_IOCTL_##ioctl) - DRM_COMMAND_BASE] = {  \
@@ -198,26 +212,26 @@ https://blog.csdn.net/sinat_22338935/article/details/138086943
 	__drmm_add_action(dev, action, data, #action)
 
 
-//TODO - kernel 编译 targz
+// TODO - [kernel 编译 targz]
 
 https://projectacrn.github.io/latest/tutorials/tar_installation.html
 make clean; make -j 128 INSTALL_MOD_STRIP=1 targz-pkg
 
 
 
-//TODO - kernel panic pstate
+//TODO - [kernel panic pstate]
 
 pstate: 20400009 (nzCv daif +PAN -UAO -TCO BTYPE=--)
 
 
 
-//TODO - kernel mm oom
+//TODO - [kernel mm oom]
 
 echo -1000 > /proc/2000/oom_score_adj /* 禁止oom杀掉 */
 
 
 
-//TODO - kernel Makefile 编译 module ko
+//TODO - [kernel Makefile 编译 module ko]
 
 obj-m:= memdev.o // 编译目标
 KERNELDIR:=/lib/modules/3.13.11-ckt39/build // 内核源码树
@@ -236,7 +250,7 @@ $(warning “here add the debug info”)
 $(error “error: this will stop the compile”)
 
 
-//TODO - kernel modprobe format error
+//TODO -[ kernel Modprobe Format Error]
 
 将源码中的Makefile文件修改为当前运行内核的版本号即可：
 
@@ -248,7 +262,7 @@ EXTRAVERSION = -45-generic
 https://www.cnblogs.com/haiyonghao/p/14440115.html
 
 
-//TODO - kernel 解压 vmlinuz
+//TODO - [kernel 解压 vmlinuz]
 
 dd if=/boot/vmlinuz-$(uname -r) bs=1 skip=13932 | zcat > vmlinux-$(uname -r)
 
@@ -260,7 +274,7 @@ dd if=/boot/vmlinuz-$(uname -r) bs=1 skip=13932 | zcat > vmlinux-$(uname -r)
 
 
 
-//TODO - kernel gpio general
+//TODO - [kernel Gpio general]
 
 of_get_named_gpio_flags()
 led-green = <&gpio1 8 GPIO_ACTIVE_LOW>;  /* #1 bank  #2 pinnum  #3 flags */
@@ -308,7 +322,7 @@ led-green = <&gpio1 8 GPIO_ACTIVE_LOW>;  /* #1 bank  #2 pinnum  #3 flags */
 #define late_initcall_sync(fn)     __define_initcall("7s",fn,7s)
 
 
-//TODO - kernel softirq 软中断
+//TODO - [kernel softirq 软中断]
 
 /* https://www.cnblogs.com/arnoldlu/p/8659986.html */
 /* 软中断 执行时机 */
@@ -348,6 +362,8 @@ struct mm_struct init_mm = {
 
 /* http://www.wowotech.net/memory_management/fixmap.html */
 
+* 虚拟地址固定 物理地址不固定
+* 内存模块初始化之前 已经可以建立临时固定映射 就算内存模块初始化完成后 固定映射的虚拟地址任然不变
 
 //TODO - kernel struct task_struct stack
 
@@ -371,6 +387,14 @@ page_address(page)
 					pfn_to_virt(page_to_pfn(page))
 						return __va(pfn) << PAGE_SHIFT;
 
+// TODO - [struct page 分类]
+* 根据struct page中的union分类:
+	pagecache和anonymous
+	slab
+	compound page
+	Page table
+	hugetlb
+	ZONE_DEVICE pages
 
 //TODO - kernel WRITE_ONCE READ_ONCE
 

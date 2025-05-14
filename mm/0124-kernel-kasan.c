@@ -59,11 +59,11 @@ shadow memory 空间 32TB
 
 ks 起始地址 0xffff_0000_0000_0000
 
-ks 空间地址分配
+ks 空间虚拟地址分配
 	KASAN
 	MODULE
-	VMALLOC
 	FIXMAP
+	VMALLOC
 	PCI_IO
 	VMEMMAP
 	linear mapping
