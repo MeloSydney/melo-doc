@@ -51,7 +51,7 @@ TCR_ELx
 
 /*
  * thread identifying information 存储区域
- * 例如 保存 cpuid domid
+ * vcpu_id << 0 || dm_id << 8 || logic_cpu_id << 16
  */
 TPIDR_EL0
 TPIDR_EL1

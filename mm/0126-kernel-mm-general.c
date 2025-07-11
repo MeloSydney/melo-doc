@@ -128,38 +128,38 @@ ___GFP_THISNODE		NUMA 节点或者在指定 NUMA 节点中分配内存
 
 
 enum {
-    ___GFP_DMA_BIT,
-    ___GFP_HIGHMEM_BIT,
-    ___GFP_DMA32_BIT,
-    ___GFP_MOVABLE_BIT,
-    ___GFP_RECLAIMABLE_BIT,
-    ___GFP_HIGH_BIT,
-    ___GFP_IO_BIT,
-    ___GFP_FS_BIT,
-    ___GFP_ZERO_BIT,
-    ___GFP_UNUSED_BIT,	/* 0x200u unused */
-    ___GFP_DIRECT_RECLAIM_BIT,
-    ___GFP_KSWAPD_RECLAIM_BIT,
-    ___GFP_WRITE_BIT,
-    ___GFP_NOWARN_BIT,
-    ___GFP_RETRY_MAYFAIL_BIT,
-    ___GFP_NOFAIL_BIT,
-    ___GFP_NORETRY_BIT,
-    ___GFP_MEMALLOC_BIT,
-    ___GFP_COMP_BIT,
-    ___GFP_NOMEMALLOC_BIT,
-    ___GFP_HARDWALL_BIT,
-    ___GFP_THISNODE_BIT,
-    ___GFP_ACCOUNT_BIT,
-    ___GFP_ZEROTAGS_BIT,
+	___GFP_DMA_BIT,
+	___GFP_HIGHMEM_BIT,
+	___GFP_DMA32_BIT,
+	___GFP_MOVABLE_BIT,
+	___GFP_RECLAIMABLE_BIT,
+	___GFP_HIGH_BIT,
+	___GFP_IO_BIT,
+	___GFP_FS_BIT,
+	___GFP_ZERO_BIT,
+	___GFP_UNUSED_BIT,	/* 0x200u unused */
+	___GFP_DIRECT_RECLAIM_BIT,
+	___GFP_KSWAPD_RECLAIM_BIT,
+	___GFP_WRITE_BIT,
+	___GFP_NOWARN_BIT,
+	___GFP_RETRY_MAYFAIL_BIT,
+	___GFP_NOFAIL_BIT,
+	___GFP_NORETRY_BIT,
+	___GFP_MEMALLOC_BIT,
+	___GFP_COMP_BIT,
+	___GFP_NOMEMALLOC_BIT,
+	___GFP_HARDWALL_BIT,
+	___GFP_THISNODE_BIT,
+	___GFP_ACCOUNT_BIT,
+	___GFP_ZEROTAGS_BIT,
 #ifdef CONFIG_KASAN_HW_TAGS
-    ___GFP_SKIP_ZERO_BIT,
-    ___GFP_SKIP_KASAN_BIT,
+	___GFP_SKIP_ZERO_BIT,
+	___GFP_SKIP_KASAN_BIT,
 #endif
 #ifdef CONFIG_LOCKDEP
-    ___GFP_NOLOCKDEP_BIT,
+	___GFP_NOLOCKDEP_BIT,
 #endif
-    ___GFP_LAST_BIT
+	___GFP_LAST_BIT
 };
 
 
@@ -297,3 +297,23 @@ Write-Through(写通)
 kworker/n:x             普通的per-cpu工作者线程        n表示CPU编号 x表示线程编号
 kworker/n:xH            高优先级的per-cpu工作者线程     n表示CPU编号 x表示线程编号
 kworker/u:x             非绑定的全局工作者线程          u表示非绑定 x表示线程编号。
+
+
+// TODO - [mm Dram 读写的物理硬件行为]
+
+
+page opened [buffer 命中]
+	page hit
+	cas
+
+page closed [buffer 未命中]
+	page miss
+	ras	[列有效]
+	cas	[行有效]
+
+page conflict [当前访问的page和buffer不一致]
+	pre-charge [关闭当前open]
+	ras
+	cas
+
+

@@ -265,3 +265,13 @@ gT              向前一个标签
 //TODO - c/cpp 关闭语法检查
 
 errorSquiggles disable
+
+
+// TODO - [快捷键 常用]
+
+zz
+
+gt
+
+gT
+
